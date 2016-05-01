@@ -100,3 +100,56 @@ Nothing is preventing the system from supporting other file formats, such as `JS
 ```
 
 This part of the program does not employ generic operators or pattern matching. The task / schedule option schema is (deliberately) simple and tightly defined, and so the power/flexibility offered by both of these systems is not necessary. In this case, these systems would introduce unnecessary overhead/complexity, and would negatively affect the readability of the program.
+
+After the whole file is parsed, each individual task is handed off to the validator:
+
+```scheme
+(define (parser:valid:task? candidate task-delimiter)
+  (let ((args (parser:readline args task-delimiter)))
+    (and (eq? 6 (length args))
+	 (parser:valid:id? (parser:task:id candidate))
+	 (parser:valid:description? (parser:task:description
+				     candidate))
+	 (parser:valid:duration? (parser:task:duration candidate))
+	 (parser:valid:deadline? (parser:task:deadline candidate))
+	 (parser:valid:dependencies? (parser:task:dependencies
+				      candidate)))))
+```
+
+As you can see above, the each individual field of the task is passed to off to individual "sub" validators:
+
+Examples:
+
+```scheme
+(define (parser:valid:id? candidate)
+  (integer? (string->number candidate)))
+
+(define (parser:valid:description? candidate)
+  ...)
+
+  (define (parser:valid:time-arg? candidate interval)
+    (if (not (and (string? interval)
+  		(> (string-length interval) 0)))
+        (error "parser:valid:time-arg? -> Interval must be a string and have a length > 0")
+        (and (string? candidate)
+  	   (>= (string-length candidate) 2)
+  	   (string-search-backward interval candidate)
+  	   (integer?
+  	    (string->number (string-head candidate
+  					 (- (string-length
+  					     candidate)
+  					    (string-length
+  					     interval))))))))
+
+(define (parser:valid:duration? candidate)
+  (and (string? candidate)
+       (let ((args (parser:readline candidate "-")))
+	 (pp args)
+	 (and (eq? 3 (length args))
+	      (parser:valid:time-arg? (car args) "d")
+	      (parser:valid:time-arg? (cadr args) "h")
+	      (parser:valid:time-arg? (caddr args) "m")))))
+...
+```
+
+If any particular task is unable to be parsed, the whole read-file operation fails, and the user is informed as to which field was incorrectly specified. 
