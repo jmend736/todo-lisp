@@ -1,10 +1,8 @@
 #6.905 Task Parser Writeup
 
 This part of the program is responsible for parsing a user's given
-representation for a collection of `task`s schedule, validating it, and
-packaging all this information up so that it can be used in the rest
-of the system.
-
+representation for a collection of __tasks__, validating them, and
+packaging all this information up so that it the rest of the project can use it.
 
 ##Schema Definitions
 
@@ -30,11 +28,11 @@ but here's a brief description of each of the fields:
 | `<id>`           | unique integer identifier for a task                                                                                        | `22`                                                                                                 |
 | `<description>`  | description of a task                                                                                                       | `"This is not The Greatest Task in the World, no. This is just a tribute..."`                        |
 | `<deadline>`     | string time representation that represents the fixed moment in time that a task must be completed by (`"YYYY-MM-DD-HH-MM"`) | `"1958-09-09-11-58"` <- This creates a deadline for the task that is September 9th 1958, at 11:58 AM |
-| `<duration>`     | string time representation for how long a given task is supposed to last (`"XXd-XXh-XXm"`)                                  | `"11d-22h-63m"` <- This makes a task that will last 11 days, 22 hours, and 63 minutes.               |
-| `<dependencies>` | comma delimited list of integer ids (possibly empty) of the tasks that must be completed before this task can be started    | `22, 44`                                                                                             |
+| `<duration>`     | string time representation for how long a given task is supposed to last (`"XXd-XXh-XXm"`)                                  | `"11d-22h-63m"` <- This makes a task with a duration of 11 days, 22 hours, and 63 minutes.               |
+| `<dependencies>` | Comma delimited list of integer ids (possibly empty) of the tasks that must be completed before this task can be started    | `22, 44`                                                                                             |
 
 ###Schedule Options
-A user is also able to define _schedule options_, which allows the user to the number of hours they're able to work on any given day of the week, etc.
+A user is also able to define _schedule options_, which allows the user to the number of hours they are able to work on any given day of the week, etc.
 
 ```scheme
 ('schedule-options
@@ -51,4 +49,54 @@ A user is also able to define _schedule options_, which allows the user to the n
 
 ##Task Parsing
 
-The "official" setup way
+The "official" method for specifying a list of tasks is just to write a plain text file. Individual tasks are separated by newlines, and the individual fields for any given task are separated by a configurable delimiter.
+
+Example of a text file of schedule options, followed by 2 tasks (delimiter == `#!`):
+
+```
+
+
+8h, 8h, 5h, 3h, 2h, 0h, 0h #! 03h-15m #! 45m-every-09h
+--BEGIN--
+1 #! task 1 depends on task 2  #! 1958-09-09-11-58 #! 11d-22h-63m #! 2
+2 #! task 2 depends on nothing #! 1958-09-09-01-40 #! 00d-00h-30m #!
+
+
+```
+
+Even though the above is the "official" method of specifying tasks, the parser uses good style, and abstracts the specifics of grabbing the individual fields of each task/schedule option to function calls:
+
+
+```scheme
+
+;;emulates python's split() function
+;;"1,23,3" -> ("1" "23" "3")
+(define (parser:split line delimiter)
+  ...)
+
+(define (parser:task:id t)
+  (cadr t))
+
+(define (parser:task:description t)
+  (caddr t))
+
+(define (parser:task:duration t)
+  ...)
+
+...
+
+```
+
+Nothing is preventing the system from supporting other file formats, such as `JSON`.
+
+
+```json
+{
+    "id": 22,
+    "description": "this is a JSON example",
+    "duration": "...",
+    ...
+}
+```
+
+This part of the program does not employ generic operators or pattern matching. The task / schedule option schema is (deliberately) simple and tightly defined, and so the power/flexibility offered by both of these systems is not necessary. In this case, these systems would introduce unnecessary overhead/complexity, and would negatively affect the readability of the program.
