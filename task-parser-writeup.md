@@ -152,4 +152,4 @@ Examples:
 ...
 ```
 
-If any particular task is unable to be parsed, the whole read-file operation fails, and the user is informed as to which field was incorrectly specified. 
+If any particular task is unable to be parsed, the whole read-file operation fails, and the user is informed as to which field was incorrectly specified. Otherwise, the tasks are all packaged up in simple scheme lists and handed off to the other parts of the program. 
