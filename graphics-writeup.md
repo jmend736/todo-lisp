@@ -39,7 +39,7 @@ where each of these are generic elements passed as a list.
 | `block_id`      | The ID for this specific work block                 | `2320`              |
 | `dependent_ids` | A list of the IDs that depend on this element       | `'(2032 0329 9402)` |
 | `taskid`        | The ID for the task that this work block belongs to | `4932`              |
-| `starttime`     | The ID for the task that this work block belongs to | `4932`              |
+| `starttime`     | The date and time that a task is scheduled to begin | `"0d-3h-10m"`       |
 
 (I've omitted elements that are discussed earlier in the Task Parser section)
 
