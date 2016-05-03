@@ -230,4 +230,33 @@
 ;;error:dependencies 
 |#
 
+#|parser:valid:options? Test Cases:
+
+(parser:valid:options? "8h, 8h, 5h, 3h, 2h, 0h, 0h #! 03h-15m #!
+45m-every-09h" "#!")
+
+(parser:valid:options? "8, 8h, 5h, 3h, 2h, 0h, 0h #! 03h-15m #!
+45m-every-09h" "#!")
+;;error:hours-per-day
+
+(parser:valid:options? "8h 8h, 5h, 3h, 2h, 0h, 0h #! 03h-15m #!
+45m-every-09h" "#!")
+;;error:hours-per-day
+
+(parser:valid:options? "8h, 5h, 3h, 2h, 0h, 0h #! 03h-15m #!
+45m-every-09h" "#!")
+;;error:hours-per-day
+
+(parser:valid:options? "8h, 8h, 5h, 3h, 2h, 0h, 0h #! 03-15m #!
+45m-every-09h" "#!")
+;;error:time-per-task
+
+(parser:valid:options? "8h, 8h, 5h, 3h, 2h, 0h, 0h #! 03h15m #!
+45m-every-09h" "#!")
+;;error:time-per-task
+
+(parser:valid:options? "8h, 8h, 5h, 3h, 2h, 0h, 0h #! 03h-15m #!
+45m-every09h" "#!")
+;;error:break-interval
+|#
 

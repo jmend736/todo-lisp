@@ -149,6 +149,21 @@
 (define parser:error:description 'error:description)
 (define parser:error:dependencies 'error:dependencies)
 
+(define (parser:option:hours-per-day o)
+  (cadr o))
+
+(define (parser:option:time-per-task o)
+  (caddr o))
+
+(define (parser:option:break-interval o)
+  (cadddr o))
+
+(define parser:error:hours-per-day 'error:hours-per-day)
+(define parser:error:time-per-task 'error:time-per-task)
+(define parser:error:break-interval 'error:break-interval)
+
+
+
 
 ;; if candidate is valid, returns a task object, otherwise returns error an error
 ;; symbol that tells you how it was poorly formed
@@ -165,6 +180,27 @@
 	  ((not (parser:valid:dependencies? (parser:task:dependencies
 					     args)))
 	   parser:error:dependencies)
+	  (else args))))
+
+;; if candidate is valid, returns an options object, otherwise returns error an error
+;; symbol that tells you how it was poorly formed
+(define (parser:valid:options? candidate field-delimiter)
+  (let ((args (cons 'options (parser:readline candidate
+					      field-delimiter))))
+    
+    (cond ((not (eq? 4 (length args))) parser:error:length)
+	  ((not (parser:valid:hours-per-day?
+		 (parser:option:hours-per-day args)))
+	   parser:error:hours-per-day)
+	  
+	  ((not (parser:valid:time-per-task?
+		 (parser:option:time-per-task args)))
+	   parser:error:time-per-task)
+	  
+	  ((not (parser:valid:break-interval?
+		 (parser:option:break-interval args)))
+	   parser:error:break-interval)
+	  
 	  (else args))))
 
 
