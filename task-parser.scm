@@ -40,7 +40,6 @@
 (define (parser:valid:duration? candidate)
   (and (string? candidate)
        (let ((args (parser:readline candidate "-")))
-	 (pp args)
 	 (and (eq? 3 (length args))
 	      (parser:valid:time-arg? (car args) "d")
 	      (parser:valid:time-arg? (cadr args) "h")
@@ -61,8 +60,6 @@
     (if (< rest 10)
 	digits
 	(lp (+ 1 digits) (integer-floor rest 10)))))
-
-(parser:count-digits 10)
 
 (define (parser:valid:deadline? candidate)
   (and (string? candidate)
@@ -153,8 +150,8 @@
 (define parser:error:dependencies 'error:dependencies)
 
 
-;; if candidate is valid, returns #t, otherwise returns error an error
-;; object that tells you how it was poorly formed
+;; if candidate is valid, returns a task object, otherwise returns error an error
+;; symbol that tells you how it was poorly formed
 (define (parser:valid:task? candidate field-delimiter)
   (let ((args (cons 'task (parser:readline candidate field-delimiter))))
     (cond ((not (eq? 6 (length args))) parser:error:length)
@@ -168,7 +165,7 @@
 	  ((not (parser:valid:dependencies? (parser:task:dependencies
 					     args)))
 	   parser:error:dependencies)
-	  (else #t))))
+	  (else args))))
 
 
 

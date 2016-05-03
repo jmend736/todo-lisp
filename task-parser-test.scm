@@ -192,10 +192,10 @@
 
 #|parser:valid:task? Test Cases:
 (parser:valid:task? "1 #! task 1 depends on task 2 #! 1958-09-09-11-58#! 11d-22h-63m #! 2" "#!")
-;;#t
+;;(task "1" "task 1 depends on task 2" "1958-09-09-11-58" "11d-22h-63m" "2")
 
 (parser:valid:task? "2 #! task 2 depends on nothing #! 1958-09-09-01-40 #! 00d-00h-30m #!" "#!")
-;;#t
+;;(task "2" "task 2 depends on nothing" "1958-09-09-01-40" "00d-00h-30m" "")
 
 (parser:valid:task? "2 #! task 2 depends on nothing #!
 1958-09-09-01-40 #! 00d-00h-30m" "#!")
@@ -214,7 +214,7 @@
 ;;'error:id
 
 (parser:valid:task? "2 #!#! 1958-09-09-01-40 #! 00d-00h-30m #!" "#!")
-;;#t
+;;(task "2" "" "1958-09-09-01-40" "00d-00h-30m" "")
 ;;descr can be empty
 
 (parser:valid:task? "2 #! task 2 depends on nothing #! 1989-09-01-40
