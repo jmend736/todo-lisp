@@ -5,7 +5,7 @@
 
 
 ;;reads a text file
-(define (reader:read-tasks file-name delimiter)
+(define (reader:read-tasks file-name field-delimiter task-separator)
 
   (define error? symbol?)
   
@@ -27,15 +27,18 @@
 	     (lp out rest valid? (+ 1 number)))
 
 					;are we reading tasks now?
-	    ((equal? `(,reader:task-separator)
-		  (parser:readline line delimiter))
+	    ((equal? `(,task-separator)
+		  (parser:readline line field-delimiter))
 	     (lp out rest parser:valid:task? (+ 1 number)))
 
 	    (else
-	     (let ((new (valid? line delimiter)))
+	     (let ((new (valid? line field-delimiter)))
 	       (if (error? new)
 		   `(reader-error ,number ,new ,line)
-		   (lp (cons new out) rest  valid? (+ 1 number)))))))))
+		   (lp (cons new out) rest  valid? (+ 1
+						      number)))))))))
+
+
 
 
 
