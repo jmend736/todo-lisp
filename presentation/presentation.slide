@@ -1,0 +1,38 @@
+
+To-Do Lisp 
+A Scheme Task Organizer
+11:00 9 May 2016
+
+Geoffrey Gilmore
+ggilmore@mit.edu
+
+John O'Sullivan
+johno@mit.edu
+
+Julian Mendoza
+jmend736@gmail.com
+
+* Motivation
+
+Illustrated task manager
+   - organizes and visualizes a user’s tasks
+
+* Tasks
+- duration
+- deadline
+- dependencies
+
+* Parser
+
+Example File:
+
+	8h, 8h, 5h, 3h, 2h, 0h, 0h #! 03h-15m #! 45m-every-09h
+
+	--BEGIN--
+
+	1 #! task 1 depends on task 2  #! 1958-09-09-11-58 #! 11d-22h-63m #! 2
+	2 #! task 2 depends on nothing #! 1958-09-09-01-40 #! 00d-00h-30m #!
+
+
+* Example Scheme Hello
+.play hello.scm /START OMIT/,/END OMIT/
