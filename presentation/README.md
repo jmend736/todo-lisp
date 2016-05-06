@@ -35,7 +35,7 @@ exit
 
 In your bash config, have the following definitions: 
 
-```
+```bash
 mit-scheme() {
 	#path to your mit-scheme command 
     /Applications/MIT-Scheme.app/Contents/Resources/mit-scheme
