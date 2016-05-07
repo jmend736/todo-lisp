@@ -21,20 +21,31 @@
     (error "d:value: Wrong Pattern")))
 
 ;; TODO: Expand the predicates
-(define START
+(define d:START
   (d:generic-element symbol? (lambda (x) (list 'start (list x)))))
 
-(define START_LIST
+(define d:START_LIST
   (d:generic-element list? (lambda (x) (list 'start x))))
 
-(define END
+(define d:END
   (d:generic-element symbol? (lambda (x) (list 'end (list x)))))
 
-(define END_LIST
+(define d:END_LIST
   (d:generic-element list? (lambda (x) (list 'end x))))
 
-(define RANK
+(define d:RANK
   (d:generic-element alist? (lambda (x) (list 'props (list 'rank x)))))
+
+(define (option? thing)
+  (and (list? thing)
+       (= (length thing) 2)))
+
+(define d:OPTION
+  (d:generic-element option? (lambda (x) (list 'props x))))
+
+(define d:gen-option
+  (lambda (option_name)
+    (d:generic-element string? (lambda (x) (list 'props (list option_name x))))))
 
 ;; TODO: Make properties
 
@@ -49,7 +60,9 @@
           #t
           (if (d:gen-check (car form) (car elem))
             (lp (cdr elem) (cdr form))
-            #f)))
+            (begin
+              (pp elem)
+              #f))))
       #f))
   (let lp ((lst assl))
     (if (null? lst)
@@ -58,6 +71,8 @@
         (lp (cdr lst))
         #f))))
 
+; ((option 'return) '("rofl" "copter"))
+; (d:check-format (list start end option) '((a b ("something" "rofl")) (b c ("something" "rofl"))))
 ; (d:check-format (list start start) '((a b) (b c)))
 ; (d:check-format (list start start) '((a b) (b c c)))
 ; (d:check-format (list start_list start) '(((a b c) b) ((b c d) c d)))
@@ -77,14 +92,13 @@
             (e (car elem)))
        (lp (update-assl (d:gen-value f e) el_assl) (cdr elem) (cdr form))))))
 
- ;(d:convert-element '((a b) b) (list start_list end))
+; (d:convert-element '((a b) b) (list start_list end option))
 
 ; (assq 'props (d:convert-element  '((a b c) b ((a 1) (b 2) (c 3)))
 ;                                 (list start_list end rank)))
 
 (define (d:convert format assl)
   (map (lambda (e) (d:convert-element e format)) assl))
-
 
 ; (d:convert (list start end) '((a b) (b c)))
 
@@ -99,6 +113,51 @@
 
 ; (d:elem-list-empty? '(end))
 ; (d:elem-list-empty? '(end 1))
+
+; (define (d:ops elem))
+
+(define (d:namestr start end)
+  (string-append "edge:" (symbol->string start) "->" (symbol->string end)))
+
+; (d:namestr 'a 'b)
+
+(define (d:elem->graph elem #!optional graph_initial)
+  (if (eq? graph_initial #!default) ; If no graph is passed,
+    (d:elem->graph elem '((graph))) ; call with an empty graph
+    (let lp ((graph graph_initial)
+             (start (cadr (d:elem-start elem)))
+             (end (cadr (d:elem-end elem))))
+      (cond ((null? start) graph)
+            ((null? end) (lp graph (cdr start) (cadr (d:elem-end elem))))
+            (else (lp (if (assq (d:namestr (car start) (car end)) graph) ; Add nodes
+                        (error "wut") ; Not already in the graph
+                        (append graph (list (list (d:namestr (car start) (car end))
+                                                  (car start) (car end))))) ; Already in the graph
+                      start (cdr end)))))))
+
+(d:elem->graph '((start (a c d)) (end (b)) (props ("color black"))))
+
+(define (d:node? str)
+  (string=? (substring str 0 5) "node:"))
+
+(define (d:edge? str)
+  (string=? (substring str 0 5) "edge:"))
+
+; (d:node? "node:dwjiaod")
+; (d:node? "djoiwa")
+
+; (define (d:graph->str graph_initial)
+;   (let lp ((str "digraph G {")
+;            (graph graph_initial))
+;     ((cond ((null? graph) (string-append str "}"))
+;            ((eq? (car graph) '(graph)) (lp str (cdr graph)))
+;            (else
+;              (let ((first (caar graph)))
+;                ((d:node? first)
+;                 'TODO')
+;                ((d:edge? first)
+;                 'TODO')
+;                (else 'TODO')))))))
 
 (define (d:elem->str elem)
   (let lpstart ((str "")

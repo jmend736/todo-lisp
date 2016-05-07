@@ -25,7 +25,24 @@
                 (else 0))))
       (error "d:factory: assl format error"))))
 
+
+
 ((d:factory (list start_list end)) '(((a b) e) ((a) c)) "Something")
 
-;((d:factory (list start_list end_list)) '(((a b) (wa dwg dwa jia)) ((a) (djw dwa))) "Something")
+; ((d:factory (list start_list end_list)) '(((a b) (wa dwg dwa jia)) ((a) (djw dwa))) "Something")
 
+;('workblock
+;    ('block_id <id>)
+;    ('dependent_ids <dependencies>)
+;    ('description <description>)
+;    ('taskid <taskid>)
+;    ('duration <duration>)
+;    ('starttime <deadline>)
+;    ('deadline <deadline>))
+
+(define FORMAT (list d:start d:end_list (d:gen-option "node:label") (d:gen-option "c:taskid")
+          (d:gen-option "c:duration") (d:gen-option "node:rank")
+          (d:gen-option "c:deadline")))
+
+
+((d:factory format) '((a (b c d) "label" "taskid" "duration" "rank" "deadline")) "sth")
