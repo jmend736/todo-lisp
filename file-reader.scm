@@ -12,7 +12,7 @@
   (let lp ((out '())
 	   (rest (open-input-file file-name))
 	   (valid? parser:valid:options?)
-	   (number 0))
+	   (number 1))
 
 
     
