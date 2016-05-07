@@ -1,0 +1,75 @@
+To-Do Lisp 
+A Scheme Task Organizer
+11:00 9 May 2016
+
+Geoffrey Gilmore
+ggilmore@mit.edu
+
+John O'Sullivan
+johno@mit.edu
+
+Julian Mendoza
+jmend736@gmail.com
+
+* Motivation
+
+We intended to build an _illustrated_task_manager_ which organizes and visualizes a user’s tasks in order to help them navigate what comes next.
+
+* Schema
+
+* Task
+
+`ID`:
+
+	22
+
+`Description`:
+
+	"This is not The Greatest Task in the World, no. This is just a tribute..."
+
+`Duration`:
+
+	"11d-22h-63m"
+
+`Deadline`:
+
+	"1958-09-09-11-58"
+
+`Dependencies`:
+
+	42, 44
+
+* Schedule Options
+
+`Hours-Per-Day`:
+
+	"8h, 8h, 5h, 3h, 2h, 0h, 0h"
+
+`Time-Per-Task`:
+
+	"03h-15m"
+
+`Break-Interval`:
+
+	"45m-every-09h"
+	
+* Parser
+
+* Example File
+
+(With delimiter set to `"#!"` for now):
+
+.code test.txt
+
+* Usage
+.play task-parser-example.scm /START OMIT/,/END OMIT/
+
+* Error Feedback
+
+Let's say that we screw up with the input file:
+
+.code -numbers broken-test-slide.txt
+.play error-handling-parser.scm /START OMIT/,/END OMIT/
+
+* Example Scheme Hello
+.play hello.scm /START OMIT/,/END OMIT/
