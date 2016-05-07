@@ -1,4 +1,3 @@
-
 To-Do Lisp 
 A Scheme Task Organizer
 11:00 9 May 2016
@@ -14,25 +13,63 @@ jmend736@gmail.com
 
 * Motivation
 
-Illustrated task manager
-   - organizes and visualizes a user’s tasks
+We intended to build an _illustrated_task_manager_ which organizes and visualizes a user’s tasks in order to help them navigate what comes next.
 
-* Tasks
-- duration
-- deadline
-- dependencies
+* Schema
 
+* Task
+
+`ID`:
+
+	22
+
+`Description`:
+
+	"This is not The Greatest Task in the World, no. This is just a tribute..."
+
+`Duration`:
+
+	"11d-22h-63m"
+
+`Deadline`:
+
+	"1958-09-09-11-58"
+
+`Dependencies`:
+
+	42, 44
+
+* Schedule Options
+
+`Hours-Per-Day`:
+
+	"8h, 8h, 5h, 3h, 2h, 0h, 0h"
+
+`Time-Per-Task`:
+
+	"03h-15m"
+
+`Break-Interval`:
+
+	"45m-every-09h"
+	
 * Parser
 
-Example File:
+* Example File
 
-	8h, 8h, 5h, 3h, 2h, 0h, 0h #! 03h-15m #! 45m-every-09h
+(With delimiter set to `"#!"` for now):
 
-	--BEGIN--
+.code test.txt
 
-	1 #! task 1 depends on task 2  #! 1958-09-09-11-58 #! 11d-22h-63m #! 2
-	2 #! task 2 depends on nothing #! 1958-09-09-01-40 #! 00d-00h-30m #!
+* Usage
+.play task-parser-example.scm /START OMIT/,/END OMIT/
 
+* Error Feedback
+
+Let's say that we screw up with the input file:
+
+.code -numbers broken-test-slide.txt
+.play error-handling-parser.scm /START OMIT/,/END OMIT/
 
 * Example Scheme Hello
 .play hello.scm /START OMIT/,/END OMIT/
