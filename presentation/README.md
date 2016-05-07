@@ -1,6 +1,6 @@
 #Presentation Instructions 
 
-[Read this for the instructions](http://halyph.com/blog/2015/05/18/golang-presentation-tool/)
+Read this for the instructions: http://halyph.com/blog/2015/05/18/golang-presentation-tool/
 
 Basically 
 
