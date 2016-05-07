@@ -16,7 +16,7 @@ In order to run a code snippet in the presentation, we'll need to have a custom 
 ```bash
 #!/bin/bash
 source /Users/gmgilmore/.bash_profile
-mit-scheme-script /Users/gmgilmore/go-present-for-python/hello.scm
+mit-scheme-script /Users/gmgilmore/dev/go/todo-lisp/presentation/hello.scm
 exit
 ;;START OMIT
 (display "hello, world!")
