@@ -149,14 +149,17 @@
              (end (cadr (d:elem-end elem)))
              (props (if (> (length (d:elem-props elem)) 1)
                       (cdr (d:elem-props elem))
+                      (list)))
+            (nprops (if (> (length (d:elem-nprops elem)) 1)
+                      (cdr (d:elem-nprops elem))
                       (list))))
       (cond ((null? start) graph)
-            ((null? end) (lp graph (cdr start) (cadr (d:elem-end elem)) props))
+            ((null? end) (lp graph (cdr start) (cadr (d:elem-end elem)) props nprops))
             (else (lp (if (assq (d:namestr (car start) (car end)) graph) ; Add nodes
                         (error "wut") ; Not already in the graph
                         (append graph (list (list (d:namestr (car start) (car end))
-                                                  (car start) (car end) props)))) ; Already in the graph
-                      start (cdr end) props))))))
+                                                  (car start) (car end) props nprops)))) ; Already in the graph
+                      start (cdr end) props nprops))))))
 
 ; (d:elem->graph '((start (a c d)) (end (b)) (props ("color" "red") ("style" "dotted"))))
 
@@ -194,7 +197,9 @@
                                                           " ["))
                                                    (props (caddr element)))
                                             (if (null? props)
-                                              (string-append str "]; ")
+                                              (string-append str
+                                                             "]; "
+                                                             (d:process-nprops (cadddr element) ""))
                                               (lp (string-append
                                                     str
                                                     (caar props)
@@ -206,7 +211,24 @@
                                             "->"
                                             (symbol->string end)
                                             "; "
+                                            (d:process-nprops (cadddr element) "")
                                             ))))))
+
+(define (d:process-nprops nprops str)
+  (if (null? nprops)
+    str
+    (let ((nprop (car nprops)))
+      (string-append str
+                    " "
+                    (symbol->string (cadr nprop))
+                    " ["
+                    (car nprop)
+                    "="
+                    (caddr nprop)
+                    "];"
+                    ))))
+
+; (d:process-nprops '(("color" d "blue")) "")
 
 
 (define (d:graph->str graph_initial)

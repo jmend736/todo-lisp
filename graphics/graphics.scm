@@ -47,7 +47,7 @@
       (error "d:factory: assl format error"))))
 
 
- ((d:factory (list d:start_list d:end)) '(((a b) e) ((a) c)) "Something")
+; ((d:factory (list d:start_list d:end)) '(((a b) e) ((a) c)) "Something")
 
 ; ((d:factory (list start_list end_list)) '(((a b) (wa dwg dwa jia)) ((a) (djw dwa))) "Something")
 
@@ -72,6 +72,9 @@
 ; (write-dot-file ((d:factory (list d:start d:end_list (d:gen-option "color")))
 ;   '((a (b c d) "red") (d (e r) "blue")) "sth") "sth")
 
-(write-dot-file ((d:factory (list d:start d:end_list (d:gen-option "color")))
-  '((a (b c d) "red") (d (e r) "blue")) "sth") "sth")
+(write-dot-file ((d:factory (list d:start d:end_list (d:gen-node-option "color")))
+  '((a (b c d) (a "red")) (d (e r) (d "blue"))) "sth") "sth")
+
+((d:factory (list d:start d:end_list (d:gen-node-option "color")))
+  '((a (b c d) (a "red")) (d (e r) (d "blue"))) "sth")
 
