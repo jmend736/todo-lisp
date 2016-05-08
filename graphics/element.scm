@@ -47,8 +47,6 @@
   (lambda (option_name)
     (d:generic-element string? (lambda (x) (list 'props (list option_name x))))))
 
-;; TODO: Make properties
-
 (define (d:check-format format assl)
   (define (check format element)
     (if (= (length format)
@@ -92,7 +90,7 @@
             (e (car elem)))
        (lp (update-assl (d:gen-value f e) el_assl) (cdr elem) (cdr form))))))
 
-; (d:convert-element '((a b) b) (list start_list end option))
+; (d:convert-element '((a b) b "red") (list d:start_list d:end (d:gen-option "color")))
 
 ; (assq 'props (d:convert-element  '((a b c) b ((a 1) (b 2) (c 3)))
 ;                                 (list start_list end rank)))
@@ -107,6 +105,11 @@
 
 (define (d:elem-end elem)
   (assq 'end elem))
+
+(define (d:elem-props elem)
+  (assq 'props elem))
+
+(d:elem-props '((start a) (end b) (props)))
 
 (define (d:elem-list-empty? elem-list)
   (= 1 (length elem-list)))
@@ -126,16 +129,21 @@
     (d:elem->graph elem '((graph))) ; call with an empty graph
     (let lp ((graph graph_initial)
              (start (cadr (d:elem-start elem)))
-             (end (cadr (d:elem-end elem))))
+             (end (cadr (d:elem-end elem)))
+             (props (if (> (length (d:elem-props elem)) 1)
+                      (cdr (d:elem-props elem))
+                      (list))))
       (cond ((null? start) graph)
-            ((null? end) (lp graph (cdr start) (cadr (d:elem-end elem))))
+            ((null? end) (lp graph (cdr start) (cadr (d:elem-end elem)) props))
             (else (lp (if (assq (d:namestr (car start) (car end)) graph) ; Add nodes
                         (error "wut") ; Not already in the graph
                         (append graph (list (list (d:namestr (car start) (car end))
-                                                  (car start) (car end))))) ; Already in the graph
-                      start (cdr end)))))))
+                                                  (car start) (car end) props)))) ; Already in the graph
+                      start (cdr end) props))))))
 
-(d:elem->graph '((start (a c d)) (end (b)) (props ("color black"))))
+; (d:elem->graph '((start (a c d)) (end (b)) (props ("color" "red") ("style" "dotted"))))
+
+; (d:elem->graph '((start (a c d)) (end (b)) (props)))
 
 (define (d:node? str)
   (string=? (substring str 0 5) "node:"))
@@ -146,33 +154,70 @@
 ; (d:node? "node:dwjiaod")
 ; (d:node? "djoiwa")
 
-; (define (d:graph->str graph_initial)
-;   (let lp ((str "digraph G {")
-;            (graph graph_initial))
-;     ((cond ((null? graph) (string-append str "}"))
-;            ((eq? (car graph) '(graph)) (lp str (cdr graph)))
-;            (else
-;              (let ((first (caar graph)))
-;                ((d:node? first)
-;                 'TODO')
-;                ((d:edge? first)
-;                 'TODO')
-;                (else 'TODO')))))))
+(define d:analyze (simple-generic-procedure 'd:analyze 1))
 
-(define (d:elem->str elem)
-  (let lpstart ((str "")
-                (start (cadr (d:elem-start elem)))
-                (end (cadr (d:elem-end elem))))
-    (cond ((null? start) str)
-          ((null? end) (lpstart str (cdr start) (cadr (d:elem-end elem))))
-          (else (lpstart (string-append
-                           str (symbol->string
-                             (car start))
-                           "->"
-                           (symbol->string
-                             (car end))
-                           ";")
-                         start (cdr end))))))
+(define-generic-procedure-handler d:analyze
+                                  (all-args 1 d:node?)
+                                  (lambda (node)
+                                    (pp "node")))
+
+(define-generic-procedure-handler d:analyze
+                                  (all-args 1 d:edge?)
+                                  (lambda (edge)
+                                    (lambda (element)
+                                      (let ((start (car element))
+                                            (end (cadr element)))
+                                        (if (not (null? (caddr element)))
+                                          (let lp ((str (string-append
+                                                          (symbol->string
+                                                            start)
+                                                          "->"
+                                                          (symbol->string
+                                                            end)
+                                                          " ["))
+                                                   (props (caddr element)))
+                                            (if (null? props)
+                                              (string-append str "]; ")
+                                              (lp (string-append
+                                                    str
+                                                    (caar props)
+                                                    "="
+                                                    (cadar props))
+                                                  (cdr props))))
+                                          (string-append
+                                            (symbol->string start)
+                                            "->"
+                                            (symbol->string end)
+                                            "; "
+                                            ))))))
+
+
+(define (d:graph->str graph_initial)
+  (let lp ((str "digraph G {")
+           (graph (list-tail graph_initial 1)))
+    (cond ((null? graph) (string-append str "}"))
+          ((eq? (car graph) '(graph)) (lp str (cdr graph)))
+          (else
+            (lp (string-append str ((d:analyze (caar graph)) (cdar graph)))
+                (cdr graph))))))
+
+
+(d:graph->str (d:elem->graph '((start (a c d)) (end (b)) (props ("color" "red")))))
+
+; (define (d:elem->str elem)
+;   (let lpstart ((str "")
+;                 (start (cadr (d:elem-start elem)))
+;                 (end (cadr (d:elem-end elem))))
+;     (cond ((null? start) str)
+;           ((null? end) (lpstart str (cdr start) (cadr (d:elem-end elem))))
+;           (else (lpstart (string-append
+;                            str (symbol->string
+;                              (car start))
+;                            "->"
+;                            (symbol->string
+;                              (car end))
+;                            ";")
+;                          start (cdr end))))))
 
 ;(d:elem->str '((start (a b)) (end (b)) (props)))
 ;(d:elem->str '((start (a b)) (end (b c d e)) (props)))
