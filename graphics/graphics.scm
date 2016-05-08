@@ -69,8 +69,9 @@
 ; ((d:factory format) '((a (b c d) "label" "taskid" "duration" "rank" "deadline")) "sth")
 
 
-(d:graph->str (d:elem->graph '((start (a)) (end (b c d)) (props ("color" "red")))))
+; (write-dot-file ((d:factory (list d:start d:end_list (d:gen-option "color")))
+;   '((a (b c d) "red") (d (e r) "blue")) "sth") "sth")
 
-((d:factory (list d:start d:end_list (d:gen-option "color")))
-    '((a (b c d) "red") (d (e r) "blue")) "sth")
+(write-dot-file ((d:factory (list d:start d:end_list (d:gen-option "color")))
+  '((a (b c d) "red") (d (e r) "blue")) "sth") "sth")
 

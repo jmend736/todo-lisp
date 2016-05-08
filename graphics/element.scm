@@ -47,6 +47,16 @@
   (lambda (option_name)
     (d:generic-element string? (lambda (x) (list 'props (list option_name x))))))
 
+;; 'TODO' Make more stringent
+
+(define d:gen-node-option
+  (lambda (option_name)
+    (d:generic-element list? (lambda (x) (list 'nprops (list option_name (first x)
+                                                             (second x)))))))
+
+; (d:gen-value (d:gen-node-option "label") '(a "newname"))
+; -> (nprops ("label" a "newname"))
+
 (define (d:check-format format assl)
   (define (check format element)
     (if (= (length format)
@@ -80,7 +90,7 @@
 ;                                                ((b c d) c ((b 2) (c 3) (d 1)))))
 
 (define (d:convert-element element format)
-  (let lp ((el_assl (list '(start) '(end) '(props)))
+  (let lp ((el_assl (list '(start) '(end) '(props) '(nprops)))
            (elem element)
            (form format))
     (if (or (null? elem)
@@ -90,7 +100,8 @@
             (e (car elem)))
        (lp (update-assl (d:gen-value f e) el_assl) (cdr elem) (cdr form))))))
 
-; (d:convert-element '((a b) b "red") (list d:start_list d:end (d:gen-option "color")))
+; (d:convert-element '((a b) b "red" (a "rofl")) (list d:start_list d:end (d:gen-option "color")
+;                                           (d:gen-node-option "label")))
 
 ; (assq 'props (d:convert-element  '((a b c) b ((a 1) (b 2) (c 3)))
 ;                                 (list start_list end rank)))
@@ -109,6 +120,9 @@
 (define (d:elem-props elem)
   (assq 'props elem))
 
+(define (d:elem-nprops elem)
+  (assq 'nprops elem))
+
 (d:elem-props '((start a) (end b) (props)))
 
 (define (d:elem-list-empty? elem-list)
@@ -123,6 +137,9 @@
   (string-append "edge:" (symbol->string start) "->" (symbol->string end)))
 
 ; (d:namestr 'a 'b)
+
+(define (d:init-graph)
+  '((graph)))
 
 (define (d:elem->graph elem #!optional graph_initial)
   (if (eq? graph_initial #!default) ; If no graph is passed,

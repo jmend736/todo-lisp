@@ -51,4 +51,17 @@
 ;(assl->graph '((a (b d)) (b (c d))) "plss.dot")
 
 
+(define (write-dot-file str filename)
+  (let ((file-port (open-output-file (string-append filename ".dot"))))
+    (write-string str file-port)
+    (flush-output file-port)
+    (let ((port (open-output-string)))
+      (and (= (run-shell-command (string-append "dot -Tps "
+                                                (string-append filename ".dot")
+                                                " -o "
+                                                (string-append filename ".ps"))
+                                 'output port))
+           0)
+      (get-output-string port))))
+
 
