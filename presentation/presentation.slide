@@ -27,6 +27,10 @@ We intended to build an _illustrated_task_manager_ which organizes and visualize
 
 * Key Design Decisions
 
+- Parser: shows you which line and field couldn't be parsed, validators abstracted from input format.
+- Scheduler: urgency heuristic calculates remaining work hours to determine which task is next
+- Illustrator: format of graphics object is generalized and can be altered.
+
 * Conclusions & Future Work
 
 * Schema
