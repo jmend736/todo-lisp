@@ -1,20 +1,24 @@
+;; Necessary for generic procedures
+(load (list "ps3/utils"
+	    "ps3/collections"
+	    "ps3/memoizers"
+	    "ps3/predicates"
+	    "ps3/predicate-metadata"
+	    "ps3/predicate-counter"
+	    "ps3/applicability"
+	    "ps3/generic-procedures"))
+
+;; Necessary for Parser
 (load "task-parser.scm")
 (load "file-reader.scm")
 
-; (set! user-initial-environment (make-top-level-environment))
-; (environment-define user-initial-environment 
-;                     'generic-evaluation-environment
-;                     (extend-top-level-environment user-initial-environment))
-; (define generic-evaluation-environment 
-;   (access generic-evaluation-environment user-initial-environment))
-; 
-; (load "utils" user-initial-environment)
-; (load "ghelper" user-initial-environment)
-; (load "syntax" user-initial-environment)
-; (load "rtdata" user-initial-environment)
-; (load "time-arith" user-initial-environment)
-; 
-; 
-; 
-; (ge generic-evaluation-environment)
+;; Necessary for Scheduler
+(load "time-arith.scm")
+(load "scheduler.scm")
+
+;; Necessary for Illustrator
+(load "graphics/util")
+(load "graphics/io")
+(load "graphics/element")
+
 
