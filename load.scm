@@ -21,4 +21,5 @@
 (load "graphics/io")
 (load "graphics/element")
 
-
+;; Main File
+(load "todo-lisp.scm")

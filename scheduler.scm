@@ -11,7 +11,14 @@
 ;;;;;;;;;;;;
 
 (define current-time
-  `(instant ,(universal-time->local-decoded-time (get-universal-time))))
+  (let ((now (universal-time->local-decoded-time (get-universal-time))))
+  `(instant ,(make-decoded-time 
+	      0
+	      0
+	      9
+	      (decoded-time/day now)
+	      (decoded-time/month now)
+	      (decoded-time/year now)))))
 
 ; (define current-time
 ;   (let ((decoded-instant 
@@ -20,7 +27,6 @@
 
 ;; Given some instant, return an instant which is on the next day at 9am.
 (define (get-next-day some-time)
-  (pp some-time)
   (let ((tomorrow-time (t:+ some-time '(duration 1 0 0) )))
     `(instant ,(make-decoded-time
 	       0
@@ -30,7 +36,6 @@
 	       (decoded-time/month (cadr tomorrow-time))
 	       (decoded-time/year (cadr tomorrow-time))))))
 
-(set! current-time (get-next-day current-time))
 (define daily-time-remaining `(duration 0 8 0))
 (define duration-until-break `(duration 0 3 0))
 (define options (make-eq-hash-table))
@@ -52,7 +57,7 @@
 (define (task-deadline task) (cadr (assv 'deadline task)))
 (define (task-duration task) (cadr (assv 'duration task)))
 (define (task-dependencies task) (cadr (assv 'dependencies task)))
-(define (block-id block) (cadr (assv 'id block)))
+(define (block-id block) (cadr (assv 'block-id block)))
 
 (define (get-option name)
   (hash-table/lookup
@@ -114,9 +119,9 @@
 		     (t:string->duration tool-interval-string))))
 
 (define (sched:set-options option-list)
-  (sched:set-hours-per-day-of-week (car option-list))
-  (sched:set-daily-task-duration (cadr option-list))
-  (sched:set-break-interval (caddr option-list)))
+  (sched:set-hours-per-day-of-week (cadr option-list))
+  (sched:set-daily-task-duration (caddr option-list))
+  (sched:set-break-interval (cadddr option-list)))
 
 (define (sched:ingest-parsed-tasks parsed-list)
   (sched:set-options (car parsed-list))
@@ -126,24 +131,32 @@
   (for-each 
    (lambda (task) 
      (sched:make-task
-      (cadr task)
-      (caddr task)
-      (t:string->instant (cadddr task))
-      (t:string->duration (caddddr task))
-      (parser:readline (cadddddr task) ", ")))
+      (second task)
+      (third task)
+      (t:string->instant (fourth task))
+      (t:string->duration (fifth task))
+      (sixth task)))
    task-list))
 
 (define (sched:make-task id description deadline duration dependencies)
+  (define parsed-id (string->symbol (string-append "task-" id)))
+  (define parsed-dependencies)
+  (if (> (string-length dependencies) 0)
+      (set! parsed-dependencies 
+	    (map 
+	     (lambda (dep) (string->symbol (string-append "task-" dep)))
+	     (parser:readline dependencies ", ")))
+      (set! parsed-dependencies '()))
   (define new-task
-    ('task
-     ('id id)
-     ('description description)
-     ('deadline deadline)
-     ('duration duration)
-     ('dependencies dependencies)))
-  (hash-table/put! all-tasks id new-task)
-  (cond ((pair? dependencies) (hash-table/put! blocked-tasks id new-task))
-	(else (hash-table/put! available-tasks id new-task))))
+    `((id ,parsed-id)
+      (description ,description)
+      (deadline ,deadline)
+      (duration ,duration)
+      (dependencies ,parsed-dependencies)))
+  (cond ((> (length parsed-dependencies) 0)
+	 (hash-table/put! blocked-tasks parsed-id new-task))
+	(else 
+	 (hash-table/put! available-tasks parsed-id new-task))))
 
 
 ;;;;;;;;;;;;
@@ -153,13 +166,13 @@
 ;;;;;;;;;;;;
 
 (define (is-table-empty? hash-table)
-  (eq? 0 (length (hash-table/key-list hash-table))))
+  (eqv? 0 (length (hash-table/key-list hash-table))))
 
 ;; Accepts an instant and returns the duration of hours which should be
 ;; worked on that instant's day of the week.
 (define (get-todays-work-duration instant)
   (list-ref
-   (hash-table/get options work-per-day-of-week)
+   (hash-table/get options 'work-per-day-of-week #f)
    (decoded-time/day-of-week (cadr instant))))
 
 ;; Checks if two instants are on the same day.
@@ -197,12 +210,11 @@
      (hash-table/put!
       available-tasks
       (task-id task)
-      '('task
-	('id (task-id task))
-	('description (task-desc task))
-	('deadline (task-deadline task))
-	('duration duration)
-	('dependencies (task-dependencies task)))))
+      `((id ,(task-id task))
+	(description ,(task-desc task))
+	(deadline ,(task-deadline task))
+	(duration ,duration)
+	(dependencies ,(task-dependencies task)))))
    (lambda () 
      (error "Tried to update task duration but task wasn't available."))))
 
@@ -217,15 +229,15 @@
    (lambda (last-block) 
      (let ((last-block-id 
 	    (string->number 
-	     (cadr (parser:readline 
+	     (caddr (parser:readline 
 		    (symbol->string (block-id last-block)) "-")))))
        (string->symbol
 	(string-append 
-	 (task-id task) 
+	 (symbol->string (task-id task))
 	 "-" 
 	 (number->string (+ last-block-id 1))))))
    (lambda ()
-     (string->symbol (string-append (task-id task) "-1")))))
+     (string->symbol (string-append (symbol->string (task-id task)) "-1")))))
 
 ;; Given a task, finds the dependent-block-ids for its next block.  Two cases:
 ;; 1 - A work-block has already been allocated, so the next one only depends
@@ -253,14 +265,13 @@
 ;; the task to build and return a new workblock object with the desired
 ;; parameters.
 (define (make-work-block task duration start-time)
-  '('workblock
-    ('block-id (incremented-block-id task))
-    ('dependent-ids (get-dependent-block-ids task))
-    ('description (task-desc task))
-    ('task-id (task-id task))
-    ('duration duration)
-    ('start-time start-time)
-    ('deadline (task-deadline task))))
+  `((block-id ,(incremented-block-id task))
+    (dependent-ids ,(get-dependent-block-ids task))
+    (description ,(task-desc task))
+    (task-id ,(task-id task))
+    (duration ,duration)
+    (start-time ,start-time)
+    (deadline ,(task-deadline task))))
 
 
 ;;;;;;;;;;;;
@@ -278,8 +289,9 @@
   (define (task-time-remaining current-time deadline total-duration)
     (cond
      ((on-same-day? current-time deadline)
-      (t:- (t:+ total-duration (t:- deadline current-time)) 
-	   (task-duration task)))
+      (let ((time-today (t:- deadline current-time)))
+	(t:- (t:+ total-duration time-today) 
+	     (task-duration task))))
      (else
       (task-time-remaining 
        (get-next-day current-time) 
@@ -293,7 +305,8 @@
   (let ((smallest-duration '(duration 25 0 0))
 	(most-urgent-task 
 	 (hash-table/get available-tasks 
-			 (car (hash-table/key-list available-tasks)))))
+			 (car (hash-table/key-list available-tasks))
+			 #f)))
     (for-each 
      (lambda (task) 
        (let ((time-remaining (compute-time-remaining task current-time)))
@@ -301,7 +314,9 @@
 	  ((t:< time-remaining smallest-duration)
 	   (set! smallest-duration time-remaining)
 	   (set! most-urgent-task task)))))
-     (hash-table/key-list available-tasks))
+     (hash-table/datum-list available-tasks))
+    (display "Selected a task: ")
+    (pp most-urgent-task)
     most-urgent-task))
 
 
@@ -315,17 +330,20 @@
 (define (allocate-work-block task)
   (let ((block-duration (t:seconds->duration 
 			 (min (t:duration->seconds (task-duration task))
-			      (t:duration->seconds (duration-until-break))
-			      (t:duration->seconds (daily-time-remaining))))))
+			      (t:duration->seconds duration-until-break)
+			      (t:duration->seconds daily-time-remaining)))))
     (define remaining-task-time (t:- (task-duration task) block-duration))
     (define new-block (make-work-block task block-duration current-time))
-
-    (display "Working on task'")
+    (hash-table/put!
+     last-allocated-block
+     (task-id task)
+     new-block)
+    (display "Working on task '")
     (display (task-desc task))
     (display "', starting at ")
-    (display current-time)
+    (t:print current-time)
     (display "' for ")
-    (display block-duration)
+    (t:print block-duration)
     (display ".")
     (newline)
 
@@ -342,22 +360,23 @@
 ;; dependency ids are keys in the completed-tasks table.  Automatically
 ;; returns true if there are no dependencies (e.g. dependencies is an
 ;; empty list).
-(define (is-task-available? task completed-tasks)
+(define (is-task-available? task)
   (define (is-complete? dependencies)
     (if (pair? dependencies)
 	(and (hash-table/get completed-tasks (car dependencies) #f)
 	     (is-complete? (cdr dependencies)))
 	#t))
-  (is-complete? task))
+  (is-complete? (task-dependencies task)))
 
 ;; Iterate through all of the tasks in blocked-tasks, check if any of them
 ;; are available, and move them to the available-tasks table.
 (define (refresh-available-tasks)
+  (pp "Refreshing our tasks...")
   (hash-table/for-each 
    blocked-tasks
    (lambda (id task) 
      (cond
-      ((is-task-available? task completed-tasks)
+      ((is-task-available? task)
        (hash-table/put! available-tasks id task)
        (hash-table/remove! blocked-tasks id))))))
 
@@ -366,17 +385,17 @@
 ;; to determine if current-time needs to be updated before 
 (define (add-work-block)
   (display "Adding a new work block, current time is: ")
-  (pp current-time)
+  (t:print current-time)
   (cond
    ((eqv? (t:duration->seconds daily-time-remaining) 0)
     (display "End of the day, jumping to tomorrow.")
     (set! current-time (get-next-day current-time))
     (set! daily-time-remaining (get-todays-work-duration current-time))
-    (set! duration-until-break (get-option tool-duration)))
+    (set! duration-until-break (get-option 'tool-duration)))
    ((eqv? (t:duration->seconds duration-until-break) 0)
     (display "End of tool-time, jumping one break interval later.")
-    (set! current-time (t:+ current-time (get-option punt-duration)))
-    (set! duration-until-break (get-option tool-duration))))
+    (set! current-time (t:+ current-time (get-option 'punt-duration)))
+    (set! duration-until-break (get-option 'tool-duration))))
   (allocate-work-block (select-task)))
 
 ;;;;;;;;;;;;
@@ -402,7 +421,7 @@
    ((and (is-table-empty? available-tasks)
 	 (not (is-table-empty? blocked-tasks)))
     (error "Could not build schedule because these tasks had uncompletable dependencies."
-	   blocked-tasks))
+	   (pp (hash-table->alist blocked-tasks))))
 
    ; If there are available tasks, then perform one iteration of
    ; add-work-block and recurse.
