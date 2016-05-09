@@ -8,9 +8,16 @@
 
 ;; PREDICATES
 
-(define (t:duration? exp) (tagged-list? exp 'duration))
+(define (tagged-list? exp sym)
+  (eq? (car exp) sym))
 
+(define (t:duration? exp) (tagged-list? exp 'duration))
+(register-predicate! t:duration? 'duration)
 (define (t:instant? exp) (tagged-list? exp 'instant))
+(register-predicate! t:instant? 'instant)
+
+(display "(t:duration? '(duration 0 1 0)): ")
+(pp (t:duration? `(duration 0 1 0)))
 
 ;; CONSTANTS
 
@@ -56,13 +63,15 @@
   (define hours (quotient seconds t:hour))
   (set seconds (remainder seconds t:hour))
   (define minutes (quotient seconds t:minute))
-  (list 'duration days hours minutes))
+  `(duration days hours minutes))
 
 (define (t:instant->seconds instant)
-  (local-decoded-time->univeral-time (cadr instant)))
+  (display "instant in t:instant->seconds: ")
+  (pp instant)
+  (decoded-time->universal-time (cadr instant)))
 
 (define (t:seconds->instant seconds)
-  ('instant (universal-time->local-decoded-time seconds)))
+  `(instant ,(universal-time->local-decoded-time seconds)))
 
 (define (t:string->duration duration-string)
   (let ((split-string (parser:readline duration-string "-")))
@@ -73,15 +82,15 @@
     (t:seconds->duration duration-seconds)))
 
 (define (t:string->instant instant-string)
-  (let (split-instant (parser:readline instant-string "-"))
-    ('instant
-     (make-decoded-time
-      0
-      (t:get-int (fifth split-instant))
-      (t:get-int (fourth split-instant))
-      (t:get-int (third split-instant))
-      (t:get-int (second split-instant))
-      (t:get-int (first split-instant))))))
+  (let ((split-instant (parser:readline instant-string "-")))
+    `(instant
+      ,(make-decoded-time
+       0
+       (t:get-int (fifth split-instant))
+       (t:get-int (fourth split-instant))
+       (t:get-int (third split-instant))
+       (t:get-int (second split-instant))
+       (t:get-int (first split-instant))))))
 
 
 ;; GENERIC ARITHMETIC PROCEDURES
@@ -92,38 +101,37 @@
 
 (define t:+ (simple-generic-procedure 't:+ 2))
 
-(define-generic-procedure-handler
-  t:+
-  (all-args 2 t:instant?)
-  instant-plus-instant)
-
-(define-generic-procedure-handler
-  t:+
-  (all-args 2 t:duration?)
-  duration-plus-duration)
-
-(define-generic-procedure-handler
-  t:-
-  (any-args 2 t:duration? t:instant?)
-  duration-plus-instant)
-
-(define (duration-plus-duration left right)
-  (t:seconds->duration (+ (t:duration->seconds left) 
-			  (t:duration->seconds right))))
-
-(define (duration-plus-instant duration instant)
-  (let ((duration (t:select-duration left right))
-	(instant (t:select-instant left right)))
-    (t:seconds->instant (+ (t:instant->seconds instant)
-			   (t:duration->seconds duration)))))
-
-
 (define (instant-plus-instant)
   (error "Attempted to sum two instants: " 
 		    (error-irritant/noise left)
 		    (error-irritant/noise ", ")
 		    (error-irritant/noise right)
 		    (error-irritant/noise ".")))
+
+(define-generic-procedure-handler
+  t:+
+  (all-args 2 t:instant?)
+  instant-plus-instant)
+
+(define (duration-plus-duration left right)
+  (t:seconds->duration (+ (t:duration->seconds left) 
+			  (t:duration->seconds right))))
+
+(define-generic-procedure-handler
+  t:+
+  (all-args 2 t:duration?)
+  duration-plus-duration)
+
+(define (duration-plus-instant left right)
+  (let ((duration (t:select-duration left right))
+	(instant (t:select-instant left right)))
+    (t:seconds->instant (+ (t:instant->seconds instant)
+			   (t:duration->seconds duration)))))
+
+(define-generic-procedure-handler
+  t:+
+  (any-arg 2 t:duration? t:instant?)
+  duration-plus-instant)
 
 
 ;; The difference between two durations is another duration.  Negative durations
@@ -133,25 +141,25 @@
 
 (define t:- (simple-generic-procedure 't:- 2))
 
+(define (instant-minus-instant left right)
+    (t:seconds->duration 
+     (abs (- (t:instant->seconds left) 
+	     (t:instant->seconds right)))))
+
 (define-generic-procedure-handler
   t:-
   (all-args 2 t:instant?)
   instant-minus-instant)
 
-(define generic-procedure-handler
-  t:-
-  (all-args 2 t:duration?)
-  duration-minus-duration)
-
-(define generic-procedure-handler
-  t:-
-  (any-args 2 t:duration? t:instant?)
-  instant-minus-duration)
-
 (define (duration-minus-duration left right)
     (t:seconds->duration 
      (abs (- (t:duration->seconds left)
 	     (t:duration->seconds right)))))
+
+(define-generic-procedure-handler
+  t:-
+  (all-args 2 t:duration?)
+  duration-minus-duration)
 
 (define (instant-minus-duration left right)
   (let ((instant (t:select-instant left right))
@@ -159,10 +167,12 @@
     (t:seconds->instant (- (t:instant->seconds instant)
 			   (t:duration->seconds duration)))))
 
-(define (instant-minus-instant left right)
-    (t:seconds->duration 
-     (abs (- (t:instant->seconds left) 
-	     (t:instant->seconds right)))))
+(define-generic-procedure-handler
+  t:-
+  (any-arg 2 t:duration? t:instant?)
+  instant-minus-duration)
+
+
 
 ;; An instant is less than another instant if it occurs beforehand (i.e. has
 ;; a smaller value when represented in universal time), and a duration is less
@@ -171,23 +181,23 @@
 
 (define t:< (simple-generic-procedure 't:< 2))
 
+(define (instant-lt-instant left right)
+  (< (t:instant->seconds left)
+     (t:instant->seconds right)))
+
 (define-generic-procedure-handler 
   t:<
   (all-args 2 t:instant?)
   instant-lt-instant)
 
+(define (duration-lt-duration left right)
+  (< (t:duration->seconds left)
+     (t:duration->seconds right)))
+
 (define-generic-procedure-handler
   t:<
   (all-args 2 t:duration?)
   duration-lt-duration)
-
-(define (instant-lt-instant left right)
-  (< (t:instant->seconds left)
-     (t:instant->seconds right)))
-
-(define (duration-lt-duration left right)
-  (< (t:duration->seconds left)
-     (t:duration->seconds right)))
 
 ;; Instant A is greater than Instant B if Instant A is further in the future
 ;; (i.e. Instant A has a larger universal time representation).  Duration A
@@ -197,22 +207,23 @@
 
 (define t:> (simple-generic-procedure 't:> 2))
 
-(define-generic-procedure-handler
-  t:>
-  (all-args 2 t:instant?)
-  instant-gt-instant)
-
 (define (instant-gt-instant left right)
   (> (t:instant->seconds left)
      (t:instant->seconds right)))
 
 (define-generic-procedure-handler
   t:>
-  (all-args 2 t:duration?)
-  duration-gt-duration)
+  (all-args 2 t:instant?)
+  instant-gt-instant)
 
 (define (duration-gt-duration left right)
   (> (t:duration->seconds left)
      (t:duration->seconds right)))
+
+(define-generic-procedure-handler
+  t:>
+  (all-args 2 t:duration?)
+  duration-gt-duration)
+
 
 

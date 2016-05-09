@@ -11,10 +11,28 @@
 ;;;;;;;;;;;;
 
 (define current-time
-  ('instant (universal-time->local-decoded-time (get-universal-time))))
+  `(instant ,(universal-time->local-decoded-time (get-universal-time))))
+
+; (define current-time
+;   (let ((decoded-instant 
+; 	 (universal-time->local-decoded-time (get-universal-time))))
+;   '(instant decoded-instant)))
+
+;; Given some instant, return an instant which is on the next day at 9am.
+(define (get-next-day some-time)
+  (pp some-time)
+  (let ((tomorrow-time (t:+ some-time '(duration 1 0 0) )))
+    `(instant ,(make-decoded-time
+	       0
+	       0
+	       9
+	       (decoded-time/day (cadr tomorrow-time))
+	       (decoded-time/month (cadr tomorrow-time))
+	       (decoded-time/year (cadr tomorrow-time))))))
+
 (set! current-time (get-next-day current-time))
-(define daily-time-remaining ('duration 0 8 0))
-(define duration-until-break ('duration 0 3 0))
+(define daily-time-remaining `(duration 0 8 0))
+(define duration-until-break `(duration 0 3 0))
 (define options (make-eq-hash-table))
 (define completed-tasks (make-eq-hash-table))
 (define available-tasks (make-eq-hash-table))
@@ -50,17 +68,17 @@
 ;;
 ;;;;;;;;;;;;
 
-(hash-table/put! options daily-task-duration ('duration 0 4 0))
-(hash-table/put! options work-per-day-of-week 
-		 (list ('duration 0 8 0)
-		       ('duration 0 8 0)
-		       ('duration 0 5 0)
-		       ('duration 0 3 0)
-		       ('duration 0 2 0)
-		       ('duration 0 0 0)
-		       ('duration 0 0 0)))
-(hash-table/put! options tool-duration ('duration 0 3 0))
-(hash-table/put! options punt-duration ('duration 0 0 15))
+(hash-table/put! options 'daily-task-duration `(duration 0 4 0))
+(hash-table/put! options 'work-per-day-of-week 
+		 (list `(duration 0 8 0)
+		       `(duration 0 8 0)
+		       `(duration 0 5 0)
+		       `(duration 0 3 0)
+		       `(duration 0 2 0)
+		       `(duration 0 0 0)
+		       `(duration 0 0 0)))
+(hash-table/put! options 'tool-duration `(duration 0 3 0))
+(hash-table/put! options 'punt-duration `(duration 0 0 15))
 
 ;;;;;;;;;;;;
 ;;
@@ -78,22 +96,22 @@
 	   hours-per-day-list))
     (pp "Finished parsing hours-per-day-of-week option: ")
     (pp parsed-list)
-    (hash-table/put! options work-per-day-of-week parsed-list)))
+    (hash-table/put! options 'work-per-day-of-week parsed-list)))
   
 
 (define (sched:set-daily-task-duration string)
   (let ((padded-duration (string-append "0d-" string)))
-    (hash-table/put! options daily-task-duration 
+    (hash-table/put! options 'daily-task-duration 
 		     (t:string->duration padded-duration))))
 
 (define (sched:set-break-interval string)
   (let ((intervals (parser:readline string "-every-")))
     (define punt-interval-string (string-append "0d-0h-" (car intervals)))
     (define tool-interval-string (string-append "0d-" (cadr intervals) "-0m"))
-    (hash-table/put! options punt-duration 
+    (hash-table/put! options 'punt-duration 
 		     (t:string->duration punt-interval-string))
-    (hash-table/put! options tool-duration
-		     (t:string->duration tool-interval-string)))
+    (hash-table/put! options 'tool-duration
+		     (t:string->duration tool-interval-string))))
 
 (define (sched:set-options option-list)
   (sched:set-hours-per-day-of-week (car option-list))
@@ -153,16 +171,6 @@
 	       (eqv? (decoded-time/year (cadr first-instant))
 		    (decoded-time/year (cadr second-instant)))))
 
-;; Given some instant, return an instant which is on the next day at 9am.
-(define (get-next-day some-time)
-  (let ((tomorrow-time (t+ some-time ('duration 1 0 0))))
-    ('instant (make-decoded-time
-	       0
-	       0
-	       9
-	       (decoded-time/day (cadr tomorrow-time))
-	       (decoded-time/month (cadr tomorrow-time))
-	       (decoded-time/year (cadr tomorrow-time))))))
 
 ;; Given some task:
 ;; 1 - Checks it's in the available-tasks table
@@ -270,18 +278,19 @@
   (define (task-time-remaining current-time deadline total-duration)
     (cond
      ((on-same-day? current-time deadline)
-      (t- (t+ total-duration (t- deadline current-time)) (task-duration task)))
+      (t:- (t:+ total-duration (t:- deadline current-time)) 
+	   (task-duration task)))
      (else
       (task-time-remaining 
        (get-next-day current-time) 
        deadline
-       (t+ total-duration (get-todays-work-duration current-time))))))
-  (task-time-remaining current-time (task-deadline task) ('duration 0 0 0)))
+       (t:+ total-duration (get-todays-work-duration current-time))))))
+  (task-time-remaining current-time (task-deadline task) '(duration 0 0 0)))
   
 
 ;; Iterate through the available-tasks and select the one which is most urgent.
 (define (select-task)
-  (let ((smallest-duration ('duration 25 0 0))
+  (let ((smallest-duration '(duration 25 0 0))
 	(most-urgent-task 
 	 (hash-table/get available-tasks 
 			 (car (hash-table/key-list available-tasks)))))
@@ -292,7 +301,7 @@
 	  ((t:< time-remaining smallest-duration)
 	   (set! smallest-duration time-remaining)
 	   (set! most-urgent-task task)))))
-     (hash-table/key-list available-tasks)
+     (hash-table/key-list available-tasks))
     most-urgent-task))
 
 
@@ -320,7 +329,7 @@
     (display ".")
     (newline)
 
-    (set! schedule (append schedule '(new-block)))
+    (set! schedule (append schedule (list new-block)))
     (set! duration-until-break (t:- duration-until-break block-duration))
     (set! daily-time-remaining (t:- daily-time-remaining block-duration))
     (set! current-time (t:+ current-time block-duration))
@@ -328,17 +337,6 @@
 
     (if (eqv? (t:duration->seconds remaining-task-time) 0)
 	(mark-task-complete task))))
-
-;; Iterate through all of the tasks in blocked-tasks, check if any of them
-;; are available, and move them to the available-tasks table.
-(define (refresh-available-tasks)
-  (hash-table/for-each 
-   blocked-tasks
-   (lambda (id task) 
-     (cond
-      ((is-task-available? task completed-tasks)
-       (hash-table/put! available-tasks id task)
-       (hash-table/remove! blocked-tasks id))))))
 
 ;; For a given task with a given dependencies list, check if all of the
 ;; dependency ids are keys in the completed-tasks table.  Automatically
@@ -351,6 +349,17 @@
 	     (is-complete? (cdr dependencies)))
 	#t))
   (is-complete? task))
+
+;; Iterate through all of the tasks in blocked-tasks, check if any of them
+;; are available, and move them to the available-tasks table.
+(define (refresh-available-tasks)
+  (hash-table/for-each 
+   blocked-tasks
+   (lambda (id task) 
+     (cond
+      ((is-task-available? task completed-tasks)
+       (hash-table/put! available-tasks id task)
+       (hash-table/remove! blocked-tasks id))))))
 
 
 ;; Thunk.  Checks the status of duration-until-break and daily-time-remaining
