@@ -12,6 +12,7 @@
 
 (define current-time
   ('instant (universal-time->local-decoded-time (get-universal-time))))
+(set! current-time (get-next-day current-time))
 (define daily-time-remaining ('duration 0 8 0))
 (define duration-until-break ('duration 0 3 0))
 (define options (make-eq-hash-table))
@@ -207,10 +208,16 @@
    (task-id task)
    (lambda (last-block) 
      (let ((last-block-id 
-	    (string->number (cadr (parser:readline (block-id last-block) "-")))))
-       (string-append (task-id task) "-" (number->string (+ last-block-id 1)))))
+	    (string->number 
+	     (cadr (parser:readline 
+		    (symbol->string (block-id last-block)) "-")))))
+       (string->symbol
+	(string-append 
+	 (task-id task) 
+	 "-" 
+	 (number->string (+ last-block-id 1))))))
    (lambda ()
-     (string-append (task-id task) "-1"))))
+     (string->symbol (string-append (task-id task) "-1")))))
 
 ;; Given a task, finds the dependent-block-ids for its next block.  Two cases:
 ;; 1 - A work-block has already been allocated, so the next one only depends
@@ -304,11 +311,21 @@
     (define remaining-task-time (t:- (task-duration task) block-duration))
     (define new-block (make-work-block task block-duration current-time))
 
+    (display "Working on task'")
+    (display (task-desc task))
+    (display "', starting at ")
+    (display current-time)
+    (display "' for ")
+    (display block-duration)
+    (display ".")
+    (newline)
+
     (set! schedule (append schedule '(new-block)))
     (set! duration-until-break (t:- duration-until-break block-duration))
     (set! daily-time-remaining (t:- daily-time-remaining block-duration))
     (set! current-time (t:+ current-time block-duration))
     (update-task-duration task remaining-task-time)
+
     (if (eqv? (t:duration->seconds remaining-task-time) 0)
 	(mark-task-complete task))))
 
