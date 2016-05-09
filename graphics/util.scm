@@ -15,8 +15,17 @@
   (lambda (x)
     `(,(cadr (assoc 'block-id x)) ,(decoded-time->universal-time (cadadr (assoc 'start-time x))))))
 
+(define d:times-extract-names
+  (lambda (x)
+    `(,(decoded-time->string (cadadr (assoc 'start-time x))) ,(decoded-time->universal-time (cadadr (assoc 'start-time x))))))
+
 (define (d:make-time-subgraph input) ;; Assumes input is alright correct
   (define node-times (sort (map d:times-extract input)
+                           (lambda (x y)
+                             (let ((xt (cadr x))
+                                   (yt (cadr y)))
+                               (< xt yt)))))
+  (define node-names (sort (map d:times-extract-names input)
                            (lambda (x y)
                              (let ((xt (cadr x))
                                    (yt (cadr y)))
@@ -46,20 +55,28 @@
     (let lp ((str "")
              (times times))
       (if (null? times)
-        (string-append "{" (string-tail str 2) "};")
+        (string-append "{"
+                       (string-tail str 2)
+                       (let lpin ((str "")
+                                (times node-names))
+                         (if (null? times)
+                           str
+                           (lpin (string-append
+                                 str
+                                 "; "
+                                 "t"
+                                 (number->string
+                                   (cadar times))
+                                 "[label="
+                                 "\""
+                                (caar times)
+                                 "\""
+                                    "]")
+                               (cdr times))))
+                       "};")
         (lp (string-append
               str
               "->t"
-              (number->string
-                (car times)))
-            (cdr times))))
-    (let lp ((str "")
-             (times times))
-      (if (null? times)
-        (string-append "{" (string-tail str 2) "};")
-        (lp (string-append
-              str
-              "; "
               (number->string
                 (car times)))
             (cdr times))))

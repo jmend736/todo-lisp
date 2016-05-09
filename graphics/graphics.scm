@@ -21,20 +21,6 @@
 (load "format")
 (load "element")
 
-
-(define (d:factory format)
-  (lambda (assl filename)
-    (if (d:check-format format assl)
-      (let ((converted (d:convert format assl)))
-        (let lp ((str "digraph G {")
-                 (l converted))
-          (cond ((> (length l) 0)
-                 (lp (string-append str (d:elem->str (car l))) (cdr l)))
-                ((= (length l) 0) (string-append str "}"))
-                (else 0))))
-      (error "d:factory: assl format error"))))
-
-
 (define default-options "node [shape=record,width=.1,height=.1]; nodeset=.5; ranksep=.5; rankdir=LR;")
 
 (define (d:factory format #!optional options)
@@ -45,14 +31,16 @@
         (let lp ((graph (d:init-graph))
                  (converted (d:convert format assl)))
           (if (null? converted)
-            (d:graph->str graph options assl)
+            (write-dot-file (d:graph->str graph options assl) filename)
             (lp (d:elem->graph (car converted) graph) (cdr converted))))
         (error "d:factory: assl format error")))))
 
 
-; ((d:factory (list d:start_list d:end)) '(((a b) e) ((a) c)) "Something")
 
-; ((d:factory (list start_list end_list)) '(((a b) (wa dwg dwa jia)) ((a) (djw dwa))) "Something")
+; (write-dot-file ((d:factory (list d:start d:end_list (d:gen-node-option "label") (d:special "rank")))
+;   '((a (b c d) (a "red") ((a d))) (d (e r) (d "blue") ((e c)))) "sth") "sth")
+
+; (write-dot-file ((d:factory final-format) '((abc (r f o) "What is this block lol" a a a a)) "sth") "sth")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                   Format we're using
@@ -79,27 +67,7 @@
 
 
 
-
-; ((d:factory format) '((a (b c d) "label" "taskid" "duration" "rank" "deadline")) "sth")
-; 
-; 
-; (write-dot-file ((d:factory (list d:start d:end_list (d:gen-option "color")))
-;    '((a (b c d) "red") (d (e r) "blue")) "sth") "sth")
-; 
-; (write-dot-file ((d:factory (list d:start d:end_list (d:gen-node-option "label")))
-;   '((a (b c d) (a "red")) (d (e r) (d "blue"))) "sth") "sth")
-; 
-; ((d:factory (list d:start d:end_list (d:gen-node-option "label") (d:special "rank")))
-;   '((a (b c d) (a "red") ((a d))) (d (e r) (d "blue") ((e c)))) "sth")
-; 
-; (write-dot-file ((d:factory (list d:start d:end_list (d:gen-node-option "label") (d:special "rank")))
-;   '((a (b c d) (a "red") ((a d))) (d (e r) (d "blue") ((e c)))) "sth") "sth")
-
-
-; (write-dot-file ((d:factory final-format) '((abc (r f o) "What is this block lol" a a a a)) "sth") "sth")
-
-
-
+;; Generic Elements used for our project
 
 (define d:blockid
   (d:generic-element (lambda (x) (and (pair? x) (eq? (car x) 'block-id)))
@@ -116,8 +84,6 @@
   (d:generic-element (lambda (x) (and (pair? x) (eq? (car x) 'start-time)))
                      (lambda (x) (list 'special (list (cadadr x))))))
 
-
-(d:gen-check d:dependentids '(dependent-ids ()))
 
 (define d:description
   (d:generic-element (lambda (x) (and (pair? x) (eq? (car x) 'description)))
@@ -148,46 +114,5 @@
 
 
 
-(let lp ((graph '())
-         (times (sort (map d:times-extract test-input) (lambda (x y)
-                                                         (let ((xt (cadr x))
-                                                               (yt (cadr y)))
-                                                           (< xt yt))))))
-  (pp times)
-    (if (null? times)
-      graph
-      (lp (append graph '((start) (end) (props) (nprops) (special))) (cdr times)))
- )
+(d:make-time-subgraph test-input)
 
-
-
-(define input1 (sort (map d:times-extract test-input)
-       (lambda (x y) (let ((xt (cadr x)) (yt (cadr y))) (< xt yt)))))
-(define input2 (sort (map (lambda (x)
-              (decoded-time->universal-time (cadadr (assoc 'start-time x)))) test-input) <))
-
-(let lp ((str "")
-         (times input1))
-  (if (null? times)
-    str
-    (lp (string-append
-          str
-          "{rank=same;"
-          (symbol->string
-            (caar times))
-          " t"
-          (number->string
-            (cadar times))
-          "};")
-        (cdr times))))
-
-(let lp ((str "")
-         (times input2))
-  (if (null? times)
-    (string-append "{" (string-tail str 2) "};")
-    (lp (string-append
-          str
-          "->n"
-          (number->string
-            (car times)))
-        (cdr times))))
