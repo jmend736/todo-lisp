@@ -58,6 +58,7 @@
 (define (task-duration task) (cadr (assv 'duration task)))
 (define (task-dependencies task) (cadr (assv 'dependencies task)))
 (define (block-id block) (cadr (assv 'block-id block)))
+(define (block-start-time block) (cadr (assv 'start-time block)))
 
 (define (get-option name)
   (hash-table/lookup

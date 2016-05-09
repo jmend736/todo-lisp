@@ -8,7 +8,7 @@
 
 ;; From pset 3
 
-(with-working-directory-pathname "../" (lambda () (load "load.scm")))
+;(with-working-directory-pathname "../" (lambda () (load "load.scm")))
 
 ;(load (list "ps3/utils"                     ;from common
             ;"ps3/collections"               ;from common

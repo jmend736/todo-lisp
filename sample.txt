@@ -6,3 +6,4 @@
 4 #! Draft thesis progress presentation #! 2016-05-13-14-00 #! 00d-03h-00m #! 5, 6
 5 #! Complete video help-script #! 2016-05-13-14-00 #! 00d-03h-30m #!
 6 #! Debug the lessons index page #! 2016-05-13-14-00 #! 00d-04h-00m #!
+
