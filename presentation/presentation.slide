@@ -15,6 +15,24 @@ jmend736@gmail.com
 
 We intended to build an _illustrated_task_manager_ which organizes and visualizes a user’s tasks in order to help them navigate what comes next.
 
+* Specs
+
+* Demo
+
+* "Pin-Swappable Interfaces"
+
+- Parser: text file format & (reader:read-tasks "filename.txt")
+- Scheduler: sched:set-options, sched:make-tasks, & sched:get-schedule
+- Illustrator: (d:factory work-block-format) & .dot graphics
+
+* Key Design Decisions
+
+- Parser: shows you which line and field couldn't be parsed, validators abstracted from input format.
+- Scheduler: urgency heuristic calculates remaining work hours to determine which task is next
+- Illustrator: format of graphics object is generalized and can be altered.
+
+* Conclusions & Future Work
+
 * Schema
 
 * Task
