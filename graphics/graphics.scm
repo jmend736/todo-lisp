@@ -7,19 +7,22 @@
 ;;   - Figure out how to make a pseudo-table schedule via graphviz
 
 ;; From pset 3
-(load (list "ps3/utils"                     ;from common
-            "ps3/collections"               ;from common
-            "ps3/memoizers"                 ;from common
-            "ps3/predicates"                ;from common
-            "ps3/predicate-metadata"        ;from common
-            "ps3/predicate-counter"         ;from common
-            "ps3/applicability"             ;from common
-            "ps3/generic-procedures"        ;from common
-            ))
-(load "util")
-(load "io")
-(load "format")
-(load "element")
+
+(with-working-directory-pathname "../" (lambda () (load "load.scm")))
+
+;(load (list "ps3/utils"                     ;from common
+            ;"ps3/collections"               ;from common
+            ;"ps3/memoizers"                 ;from common
+            ;"ps3/predicates"                ;from common
+            ;"ps3/predicate-metadata"        ;from common
+            ;"ps3/predicate-counter"         ;from common
+            ;"ps3/applicability"             ;from common
+            ;"ps3/generic-procedures"        ;from common
+            ;))
+;(load "util")
+;(load "io")
+;(load "format")
+;(load "element")
 
 (define default-options "node [shape=record,width=.1,height=.1]; nodeset=.5; ranksep=.5; rankdir=LR;")
 
