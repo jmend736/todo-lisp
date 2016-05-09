@@ -7,8 +7,6 @@
   (sched:set-options (car parsed-file))
   (sched:make-tasks (cdr parsed-file))
   (define final-schedule (sched:get-schedule))
-  (write-dot-file 
-   ((d:factory final-format) final-schedule output-filename) output-filename)
-  (d:make-time-subgraph final-schedule))
+  ((d:factory final-format) final-schedule output-filename))
 
 

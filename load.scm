@@ -21,6 +21,7 @@
 (load "graphics/io.scm")
 (load "graphics/format.scm")
 (load "graphics/element.scm")
+(load "graphics/graphics.scm")
 
 ;; Main File
 (load "todo-lisp.scm")
