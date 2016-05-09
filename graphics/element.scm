@@ -122,6 +122,8 @@
 
 (define (d:elem-special elem) (assq 'special elem))
 
+(define d:nothing '*nothing*)
+
  ;(d:elem-props '((start a) (end b) (props)))
 
 (define (d:elem-list-empty? elem-list)
@@ -140,31 +142,34 @@
 (define (d:init-graph)
   '((graph)))
 
-(define (d:elem->graph elem #!optional graph_initial)
-  (if (eq? graph_initial #!default) ; If no graph is passed,
-    (d:elem->graph elem '((graph))) ; call with an empty graph
-    (let lp ((graph graph_initial)
-             (start (cadr (d:elem-start elem)))
-             (end (cadr (d:elem-end elem)))
-             (props (if (> (length (d:elem-props elem)) 1)
-                      (cdr (d:elem-props elem))
-                      (list)))
-            (nprops (if (> (length (d:elem-nprops elem)) 1)
-                      (cdr (d:elem-nprops elem))
-                      (list)))
+(define (d:elem->graph elem graph_initial)
+  (let lp ((graph graph_initial)
+           (start (cadr (d:elem-start elem)))
+           (end (cadr (d:elem-end elem)))
+           (props (if (> (length (d:elem-props elem)) 1)
+                    (cdr (d:elem-props elem))
+                    (list)))
+           (nprops (if (> (length (d:elem-nprops elem)) 1)
+                     (cdr (d:elem-nprops elem))
+                     (list)))
            (special (if (> (length (d:elem-special elem)) 1)
                       (cdr (d:elem-special elem))
                       (list))))
-      (cond ((null? start) graph)
-            ((null? end) (lp graph (cdr start) (cadr (d:elem-end elem)) props nprops special))
-            (else (lp (if (assq (d:namestr (car start) (car end)) graph) ; Add nodes
-                        (error "Already in the graph") ; already in the graph
-                        (append graph (list (list (d:namestr (car start) (car end))
-                                                  (car start) (car end) props nprops special)))) ; Already in the graph
-                      start (cdr end) props nprops special))))))
+    (cond ((and (= (length start) 1) (eq? d:nothing (car start)))
+           (append graph (list (list (d:namestr (car start) (car end))
+                                     (symbol-append '*nothing* (car end))
+                                     (car end)
+                                     (append props (list (list "style" "invis")))
+                                     (append nprops (invisible-node-format (symbol-append '*nothing* (car end))))
+                                     special))))
+          ((null? start) graph)
+          ((null? end) (lp graph (cdr start) (cadr (d:elem-end elem)) props nprops special))
+          (else (lp (if (assq (d:namestr (car start) (car end)) graph) ; Add nodes
+                      (error "Already in the graph") ; already in the graph
+                      (append graph (list (list (d:namestr (car start) (car end))
+                                                (car start) (car end) props nprops special)))) ; Already in the graph
+                    start (cdr end) props nprops special)))))
 
-(d:elem->graph '((start (a c d)) (end (b)) (props ("color" "red") ("style" "dotted"))
-                                 (nprops) (special ("rank" ('a "rofl")))))
 ; (d:elem->graph '((start (a c d)) (end (b)) (props)))
 
 ; TODO Remove these?
@@ -212,6 +217,8 @@
           ""))
 
 
+; (d:graph->str:element '(a b () (("task" start "end")) ()))
+
 (define (d:graph->str:element element)
   (lambda (element)
     (let ((start (car element))
@@ -220,9 +227,9 @@
           (nprops0 (cadddr element))
           (special (fifth element)))
       (string-append
-        (symbol->string start)
+        (q (symbol->string start))
         "->"
-        (symbol->string end)
+        (q (symbol->string end))
         (if (null? props0)
           ""
           (let lp ((str " [")
@@ -240,7 +247,13 @@
               (string-append str ";")
               (lp (string-append str
                                  "; "
-                                 (symbol->string (cadar nprops))
+                                 (cond
+                                   ((eq? (cadar nprops) 'start)
+                                    (q (symbol->string start)))
+                                   ((eq? (cadar nprops) 'end)
+                                    (q (symbol->string end)))
+                                   (else
+                                    (q (symbol->string (cadar nprops)))))
                                  " ["
                                  (caar nprops)
                                  "="
@@ -253,10 +266,10 @@
           (d:analyze special))))))
 
 
-(define (d:graph->str graph_initial options)
+(define (d:graph->str graph_initial options original)
   (let lp ((str (string-append "digraph G {" options))
            (graph (list-tail graph_initial 1)))
-    (cond ((null? graph) (string-append str "}"))
+    (cond ((null? graph) (string-append str (d:make-time-subgraph original) "}"))
           ((eq? (car graph) '(graph)) (lp str (cdr graph)))
           (else
             (lp (string-append str ((d:graph->str:element (caar graph)) (cdar graph)))

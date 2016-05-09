@@ -17,9 +17,10 @@
 (load "scheduler.scm")
 
 ;; Necessary for Illustrator
-(load "graphics/util")
-(load "graphics/io")
-(load "graphics/element")
+(load "graphics/util.scm")
+(load "graphics/io.scm")
+(load "graphics/format.scm")
+(load "graphics/element.scm")
 
 ;; Main File
 (load "todo-lisp.scm")
