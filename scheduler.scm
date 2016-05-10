@@ -208,14 +208,13 @@
    available-tasks
    (task-id task)
    (lambda (task)
-     (hash-table/put!
-      available-tasks
-      (task-id task)
-      `((id ,(task-id task))
-	(description ,(task-desc task))
-	(deadline ,(task-deadline task))
-	(duration ,duration)
-	(dependencies ,(task-dependencies task)))))
+     (let ((new-task `((id ,(task-id task))
+		       (description ,(task-desc task))
+		       (deadline ,(task-deadline task))
+		       (duration ,duration)
+		       (dependencies ,(task-dependencies task)))))
+       (hash-table/put! available-tasks (task-id new-task) new-task)
+       new-task))
    (lambda () 
      (error "Tried to update task duration but task wasn't available."))))
 
@@ -335,27 +334,27 @@
 			      (t:duration->seconds daily-time-remaining)))))
     (define remaining-task-time (t:- (task-duration task) block-duration))
     (define new-block (make-work-block task block-duration current-time))
+    (pp "Built a new work-block.")
     (hash-table/put!
      last-allocated-block
      (task-id task)
      new-block)
-    (display "Working on task '")
-    (display (task-desc task))
-    (display "', starting at ")
-    (t:print current-time)
-    (display "' for ")
-    (t:print block-duration)
-    (display ".")
-    (newline)
+    ; (display "Working on task '")
+    ; (display (task-desc task))
+    ; (display "', starting at ")
+    ; (t:print current-time)
+    ; (display "' for ")
+    ; (t:print block-duration)
+    ; (display ".")
+    ; (newline)
 
     (set! schedule (append schedule (list new-block)))
     (set! duration-until-break (t:- duration-until-break block-duration))
     (set! daily-time-remaining (t:- daily-time-remaining block-duration))
     (set! current-time (t:+ current-time block-duration))
-    (update-task-duration task remaining-task-time)
-
-    (if (eqv? (t:duration->seconds remaining-task-time) 0)
-	(mark-task-complete task))))
+    (display "Updating the duration of a task to: ")
+    (pp (t:print remaining-task-time))
+    (update-task-duration task remaining-task-time)))
 
 ;; For a given task with a given dependencies list, check if all of the
 ;; dependency ids are keys in the completed-tasks table.  Automatically
@@ -369,10 +368,21 @@
 	#t))
   (is-complete? (task-dependencies task)))
 
+;; Checks if a task's duration is now zero, which means it's complete.
+(define (is-task-complete? task)
+  (eqv? (t:duration->seconds (task-duration task)) 0))
+
 ;; Iterate through all of the tasks in blocked-tasks, check if any of them
 ;; are available, and move them to the available-tasks table.
 (define (refresh-available-tasks)
   (pp "Refreshing our tasks...")
+  (hash-table/for-each
+   available-tasks
+   (lambda (id task)
+     (cond
+      ((is-task-complete? task)
+       (hash-table/put! completed-tasks id task)
+       (hash-table/remove! available-tasks id)))))
   (hash-table/for-each 
    blocked-tasks
    (lambda (id task) 
@@ -397,6 +407,13 @@
     (display "End of tool-time, jumping one break interval later.")
     (set! current-time (t:+ current-time (get-option 'punt-duration)))
     (set! duration-until-break (get-option 'tool-duration))))
+  (display "\n Adding a work block.\n")
+  (display "current-time: ")
+  (pp (t:print current-time))
+  (display "daily-time-remaining: ")
+  (pp (t:print daily-time-remaining))
+  (display "duration-until-break: ")
+  (pp (t:print duration-until-break))
   (allocate-work-block (select-task)))
 
 ;;;;;;;;;;;;
@@ -415,6 +432,7 @@
    ; If there are no more blocked or available tasks, return the schedule.
    ((and (is-table-empty? available-tasks)
 	 (is-table-empty? blocked-tasks))
+    (pp "No more blocked or available tasks, schedule must be complete.")
     schedule)
 
    ; If there are no available tasks and blocked tasks isn't empty, then
