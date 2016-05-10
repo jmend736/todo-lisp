@@ -267,7 +267,7 @@
 ;; parameters.
 (define (make-work-block task duration start-time)
   `((block-id ,(incremented-block-id task))
-    (dependent-ids ,(get-dependent-block-ids task))
+    (dependent-ids ,(list (get-dependent-block-ids task)))
     (description ,(task-desc task))
     (task-id ,(task-id task))
     (duration ,duration)

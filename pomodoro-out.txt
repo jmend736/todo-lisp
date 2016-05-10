@@ -1,0 +1,37 @@
+
+------2016/5/9------
+09:00 - 12:00 :: task-1-1 / 6.945 PSET 7
+12:10 - 13:10 :: task-1-2 / 6.945 PSET 7
+13:20 - 14:20 :: task-2-1 / 6.945 PSET 8
+14:30 - 15:30 :: task-2-2 / 6.945 PSET 8
+15:40 - 16:40 :: task-2-3 / 6.945 PSET 8
+16:50 - 17:50 :: task-2-4 / 6.945 PSET 8
+
+------2016/5/10------
+09:00 - 10:00 :: task-2-5 / 6.945 PSET 8
+10:10 - 11:10 :: task-6-1 / Debug the lessons index page
+11:20 - 12:20 :: task-5-1 / Complete video help-script
+12:30 - 13:00 :: task-2-6 / 6.945 PSET 8
+13:00 - 13:30 :: task-3-1 / 6.945 PSET 9
+13:40 - 14:40 :: task-3-2 / 6.945 PSET 9
+14:50 - 15:50 :: task-3-3 / 6.945 PSET 9
+16:00 - 17:00 :: task-3-4 / 6.945 PSET 9
+17:10 - 18:10 :: task-3-5 / 6.945 PSET 9
+
+------2016/5/11------
+09:00 - 10:00 :: task-3-6 / 6.945 PSET 9
+10:10 - 10:40 :: task-3-7 / 6.945 PSET 9
+10:40 - 11:10 :: task-6-2 / Debug the lessons index page
+11:20 - 12:20 :: task-6-3 / Debug the lessons index page
+12:30 - 13:30 :: task-5-2 / Complete video help-script
+13:40 - 14:40 :: task-6-4 / Debug the lessons index page
+
+------2016/5/12------
+09:00 - 10:00 :: task-5-3 / Complete video help-script
+10:10 - 10:40 :: task-6-5 / Debug the lessons index page
+10:40 - 11:10 :: task-5-4 / Complete video help-script
+11:20 - 12:20 :: task-4-1 / Draft thesis progress presentation
+
+------2016/5/13------
+09:00 - 10:00 :: task-4-2 / Draft thesis progress presentation
+10:10 - 11:10 :: task-4-3 / Draft thesis progress presentation
