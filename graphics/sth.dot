@@ -1,1 +1,0 @@
-digraph G {a->b [color=red]; a->c [color=red]; a->d [color=red]; d->e [color=blue]; d->r [color=blue]; }
