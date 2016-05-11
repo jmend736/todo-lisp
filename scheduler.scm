@@ -285,7 +285,7 @@
 ;; (work-hours-remaining - remaining-duration)
 ;;
 ;; and return the value as a duration.
-(define (compute-time-remaining task current-time)
+(define (sched:compute-time-remaining task current-time)
   (define (task-time-remaining current-time deadline total-duration)
     (cond
      ((on-same-day? current-time deadline)
@@ -301,7 +301,7 @@
   
 
 ;; Iterate through the available-tasks and select the one which is most urgent.
-(define (select-task)
+(define (sched:select-task)
   (let ((smallest-duration '(duration 25 0 0))
 	(most-urgent-task 
 	 (hash-table/get available-tasks 
@@ -309,7 +309,7 @@
 			 #f)))
     (for-each 
      (lambda (task) 
-       (let ((time-remaining (compute-time-remaining task current-time)))
+       (let ((time-remaining (sched:compute-time-remaining task current-time)))
 	 (cond 
 	  ((t:< time-remaining smallest-duration)
 	   (set! smallest-duration time-remaining)
@@ -374,7 +374,7 @@
 
 ;; Iterate through all of the tasks in blocked-tasks, check if any of them
 ;; are available, and move them to the available-tasks table.
-(define (refresh-available-tasks)
+(define (sched:refresh-available-tasks)
   (pp "Refreshing our tasks...")
   (hash-table/for-each
    available-tasks
@@ -394,7 +394,7 @@
 
 ;; Thunk.  Checks the status of duration-until-break and daily-time-remaining
 ;; to determine if current-time needs to be updated before 
-(define (add-work-block)
+(define (sched:add-work-block)
   (display "Adding a new work block, current time is: ")
   (t:print current-time)
   (cond
@@ -414,7 +414,7 @@
   (pp (t:print daily-time-remaining))
   (display "duration-until-break: ")
   (pp (t:print duration-until-break))
-  (allocate-work-block (select-task)))
+  (allocate-work-block (sched:select-task)))
 
 ;;;;;;;;;;;;
 ;;
@@ -443,10 +443,10 @@
 	   (pp (hash-table->alist blocked-tasks))))
 
    ; If there are available tasks, then perform one iteration of
-   ; add-work-block and recurse.
+   ; sched:add-work-block & sched:refresh-available-tasks before recursing.
    ((not (is-table-empty? available-tasks))
-    (add-work-block)
-    (refresh-available-tasks)
+    (sched:add-work-block)
+    (sched:refresh-available-tasks)
     (sched:get-schedule))
    
    ; If none of these cases are true, throw an error because that isn't
