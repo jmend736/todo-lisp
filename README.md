@@ -252,7 +252,7 @@ The scheduler iteratively solves the "knapsack problem" with the added constrain
 
 ### Interface
 
-The scheduler exposes three main functions for building a schedule: `add-task`, `set-settings`, and `get-schedule`.
+The scheduler exposes three main functions for building a schedule: `sched:add-task`, `sched:set-settings`, and `sched:get-schedule`.
 
 ```scheme
 (sched:add-task <id> <description> <duration> <deadline> <dependencies>)
