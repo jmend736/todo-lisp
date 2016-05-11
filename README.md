@@ -250,9 +250,9 @@ This section of the program:
 
 The scheduler iteratively solves the "knapsack problem" with the added constraint that after a Task is fully completed, new Tasks may become available according to the dependency tree.  It also allows the user to customize how many hours of work happen per day of the week and how regularly they want a break (e.g. 15 minutes of break per 3 hours of work). 
 
-**~~maximum amount of time they want to spend on any task on a given day.~~**
+~~_Users can also set the maximum amount of time they want to spend on any task on a given day._~~
 
-Note: while this feature was originally planned and is supported by the parser, it was never implemented on the scheduler due to time constraints.
+Note: while the above feature was originally planned and is supported by the parser, it was never implemented on the scheduler due to time constraints.
 
 
 
