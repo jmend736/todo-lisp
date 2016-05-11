@@ -80,7 +80,21 @@ Given a text file containing a row of options, a options-to-tasks delimiter, and
 
 ### Illustrated Output
 
-Alternately, the user can also get a visual representation of their schedule as a graph, demonstrating the dependencies and ordering everything needs to be completed in:
+Alternately, the user can also get a visual representation of their schedule as a graph, demonstrating the dependencies and ordering everything needs to be completed in (this is a Very Wide Image broken into three parts):
+
+---
+
+![Schedule Part 1](https://raw.githubusercontent.com/jmend736/todo-lisp/master/img/sched-graph-1.PNG "Schedule Part 1")
+
+---
+
+![Schedule Part 2](https://raw.githubusercontent.com/jmend736/todo-lisp/master/img/sched-graph-2.PNG "Schedule Part 2")
+
+---
+
+![Schedule Part 3](https://raw.githubusercontent.com/jmend736/todo-lisp/master/img/sched-graph-3.PNG "Schedule Part 3")
+
+---
 
 ## Parser
 
