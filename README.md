@@ -279,13 +279,13 @@ The scheduler iteratively performs this process until all of the tasks added at 
 
 ### Overview
 
-This block of the program is responsible for taking input from the task schedule, as a list of dependencies, and generating graphviz dot files to display the schedule.
+This block of the program is responsible for taking input from the task scheduler, as a list of dependencies, and generating graphviz dot files to display the schedule.
 
-The goal of the graphics block will be to accomplish this task with few limitations on the format of the input. To do this, it will work on generic elements which the user will be able to define. If another format of input is desired, simple changes to the input are all that's needed.
+The goal of the graphics block will be to accomplish this task with as few limitations on the format of the input as possible. To do this, it will work on generic elements which the user will be able to define. If another format of input is desired, simple changes to the input format are all that's needed typically.
 
 ### Interface
 
-The input for the graphics block will be an association list with the work blocks and a specified format. The format will be built using generic elements. To define a format you must define the generic elements and pass both the format and elements into the function.
+The input for the graphics block will be an list with the work blocks and a specified format. The format will be built using generic elements. To define a format you must define the generic elements and pass both the format and elements into the function.
 
 ```scheme
 ;; To define a generic element
@@ -306,7 +306,7 @@ given that a work block has this format
     ('duration <duration>))
 ```
 
-we would have to define generic elements for `blockid`, `dependent_ids`, `description`, etc. so an example format might look something like
+We would have to define generic elements for `blockid`, `dependent_ids`, `description`, etc. so an example format might look something like
 ```scheme
 (d:block_id d:dependent_ids d:description ...)
 ```
@@ -327,33 +327,45 @@ As discussed before generic elements are defined using
 ```scheme
 (d:generic-element predicare return)
 ```
-here they key take function is the `return` function. This is what decides how the element behaves and what it will be used for. For example, for dot to work, each of the blocks must have their own unique id (this is what the `block_id`) is, and we define a special generic element. The `return` function will return an element, which is a list where the first item is a `symbol` representing the type of element and next blocks are used for data. The identifying `symbol` is used by the assembler to know how to use the element.
+Here the key function is the `return` function. This is what decides how the element behaves and what it will be used for. For example, for dot to work, each of the blocks must have their own unique id (this is what the `block_id`) is, and we define a generic element for it. The `return` function will return an element, which is a list where the first item is a `symbol` representing the type of element and next blocks are used for data. The identifying `symbol` is used by the assembler to know how to use the element.
 
 There are three general types of elements:
 
 #### Base Elements
 These are used as the names for nodes in dot. These are the base for the graph.
 
+There are two types: `start` and `end`. These represent the start and end nodes of edges.
+
 #### Option Element
 These are options that are added onto nodes or edges on the graph. These will typically be different properties that are applied to the graph (such as style properties like color, etc).
 
-#### Multiple Elements
-These are properties which will require processing more than one elements'. An example of this is rank, as we'll need to group all of the similarly ranked elements into one block.
+There are two types: `props` and `nprops` these are edge and node properties respectively.
+
+#### Special Elements
+These are generic elements that don't fit into any other categories, the user has the power to define these as needed. An example of a `special` element is `rank`. This is because you must create a subgraph for setting rank. So creating a special element for it makes it a lot easier to define.
+
+We use a generic procedure to operate on `special` elements, this makes it easier to extend the functionality to apply to any number of special elements the user wants to make.
 
 ### Combination of Elements
 
-Combination is a matter of processing them into a graph format
+Combination is a matter of processing them into a graph format.
 ```scheme
-('graph (('linename1 ...) ('linename2 ...) ...))
+('graph (('linename1 start end (props) (nprops) (special)) ('linename2 ...) ...))
 ```
-The graph would be a linked list where each element is a named line to be generated in the final output.
+The graph is a linked list where each element is a named line to be generated in the final output.
+
+This graph is generated using the `d:elem->graph` function in generate.scm.
 
 This format allows for generation to be simple, to create a new edge, we can simply create a new element in the graph alist. The other case, if we want to edit or append something to an element, we can search the graph alist, and edit that element individually.
 
 This is supposed to be internal, but extending this to add new features is straightforward, as you simply need to define the function that will edit the graph for a specific element.
 
+
 ### Output
 
-The final output is generated by converting the `graph` object into a string and writing that to a file. Then I run a terminal command to generate the final product.
+The final output is generated by converting the `graph` object into a string and writing that to a file. The conversion into a string is fairly straightforward. It's done using `d:graph->str`.
 
+The one slight modification we had to make for this project was to generate a subgraph that went along with the original. The subgraph was simply a line of times, which corresponded and had to be lined up (using rank) with the original one. We generate the subgraph and ranks separately and append them to the graph string.
+
+Then we run a terminal command using mit-scheme's built in functions to process the generated .dot file.
 The code for writing the file and running the terminal code are based on to that used in the problem sets.
