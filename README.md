@@ -35,7 +35,7 @@ An illustrated task scheduler written in MIT/GNU Scheme for Gerald J. Sussman's 
 
 Given a text file containing a row of options, a options-to-tasks delimiter, and a number of tasks which all have `id`s, `description`s, `deadline`s, `duration`s, and `dependency_id`s, like so:
 
-```
+```txt
 
 8h, 8h, 8h, 8h, 8h, 0h, 0h #! 03h-15m #! 45m-every-04h
 --BEGIN--
@@ -54,7 +54,7 @@ Given a text file containing a row of options, a options-to-tasks delimiter, and
 
 `todo-lisp` will produce a schedule consisting of a number of blocks of time dedicated to one task, such that all tasks are completed in the order described by their dependencies.  The schedule can be written out like:
 
-```
+```txt
 ------2016/5/9------
 09:00 - 12:00 :: task-1-1 / 6.945 PSET 7
 12:45 - 16:45 :: task-6-1 / Debug the lessons index page
