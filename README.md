@@ -84,15 +84,15 @@ Alternately, the user can also get a visual representation of their schedule as 
 
 ---
 
-![alt text](/img/sched-graph-1.PNG "Schedule Part 1")
+<img src="https://raw.githubusercontent.com/jmend736/todo-lisp/master/img/sched-graph-1.PNG">
 
 ---
 
-![alt text](/img/sched-graph-2.PNG "Schedule Part 2")
+<img src="https://raw.githubusercontent.com/jmend736/todo-lisp/master/img/sched-graph-2.PNG">
 
 ---
 
-![alt text](/img/sched-graph-3.PNG "Schedule Part 3")
+<img src="https://raw.githubusercontent.com/jmend736/todo-lisp/master/img/sched-graph-3.PNG">
 
 ---
 
