@@ -1,9 +1,9 @@
 # todo-lisp
 An illustrated task scheduler written in MIT/GNU Scheme for Gerald J. Sussman's Spring 2016 offering of [6.945: Adventures in Advanced Symbolic Programming](https://groups.csail.mit.edu/mac/users/gjs/6.945/) by:
 
-- Geoffrey Gilmore <ggilmore (at) mit (dot) edu>
-- Julian Mendoza <jmend (at) mit (dot) edu>
-- John O'Sullivan <johno (at) mit (dot) edu>
+- Geoffrey Gilmore (ggilmore@mit.edu)
+- Julian Mendoza (jmend@mit.edu)
+- John O'Sullivan (johno@mit.edu)
 
 ## Table of Contents
  1. Quick Specs
