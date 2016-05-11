@@ -8,8 +8,5 @@
   (sched:make-tasks (cdr parsed-file))
   (define final-schedule (sched:get-schedule))
   (pp "Schedule building complete!")
-  (print-schedule final-schedule output-filename)
+  ;(print-schedule final-schedule output-filename)
   ((d:factory final-format) final-schedule output-filename))
-
-
-

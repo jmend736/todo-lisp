@@ -1,3 +1,24 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;;                               todo-lisp
+;;
+;; Filename: util.scm
+;;
+;; Description:
+;;          Utility functions for graphics block
+;;
+;; Functions:
+;;          (d:make-time-subgraph [input list]) ~ Create time subgraph string
+;;          (d:times-extract [input list]) ~ Extract times/real times
+;;          (d:times-extract-names [input list]) ~ Extract times/name strings
+;;          (q [string]) ~ Surround with quotes
+;;          (update-assl [new] [assl]) ~ Updates assl to add new
+;;
+;;
+;; Author: jmend
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (define (update-assl new assl)
   ;; Add add elements into a certain element in an association list
   (if new
