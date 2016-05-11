@@ -77,11 +77,29 @@
                      (lambda (x) (list 'end (list (cadr x))))))
 
 
+;(define d:dependentids
+  ;(d:generic-element (lambda (x) (and (pair? x) (eq? (car x) 'dependent-ids)))
+                     ;(lambda (x) (list 'start (if (> (length (cadr x)) 0)
+                                                ;(cadr x)
+                                                ;(list d:nothing))))))
+
 (define d:dependentids
   (d:generic-element (lambda (x) (and (pair? x) (eq? (car x) 'dependent-ids)))
-                     (lambda (x) (list 'start (if (> (length (cadr x)) 0)
-                                                (cadr x)
-                                                (list d:nothing))))))
+                     (lambda (x) (list 'start (if (pair? (caadr x))
+                                                (caadr x)
+                                                (if (not (null? (caadr x)))
+                                                  (cadr x)
+                                                  (list d:nothing)))))))
+
+;(d:gen-value d:dependentids '(dependent-ids (())))
+
+;(d:gen-value d:dependentids '(dependent-ids ((task-1-1))))
+
+;(d:gen-value d:dependentids '(dependent-ids ((task-1-1 task1-2))))
+
+;(d:gen-value d:dependentids '(dependent-ids (task-1-1 task1-2)))
+
+;(d:gen-value d:dependentids '(dependent-ids (task-1-1)))
 
 (define d:starttime
   (d:generic-element (lambda (x) (and (pair? x) (eq? (car x) 'start-time)))
@@ -113,9 +131,5 @@
           (start-time (instant ,(make-decoded-time 0 0 9 9 5 2016)))
           (deadline (instant ,(make-decoded-time 0 0 17 9 5 2016))))))
 
-(write-dot-file ((d:factory final-format) test-input "sth") "sth")
-
-
-
-(d:make-time-subgraph test-input)
+;((d:factory final-format) test-input "sth")
 
